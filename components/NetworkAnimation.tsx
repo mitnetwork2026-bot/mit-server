@@ -22,9 +22,9 @@ export default function NetworkAnimation({ slow = false }: { slow?: boolean }) {
 
     let animationFrameId: number;
     let particles: Particle[] = [];
-    const particleCount = 100;
-    const connectionDistance = 180;
-    const speedMultiplier = slow ? 0.8 : 1.5;
+    const particleCount = 60; // Reduced from 100 to 60
+    const connectionDistance = 150; // Reduced from 180
+    const speedMultiplier = slow ? 0.4 : 0.8; // Reduced speeds
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -37,18 +37,19 @@ export default function NetworkAnimation({ slow = false }: { slow?: boolean }) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 1.2 * speedMultiplier,
-          vy: (Math.random() - 0.5) * 1.2 * speedMultiplier,
-          size: Math.random() * 2.5 + 1,
+          vx: (Math.random() - 0.5) * 0.6 * speedMultiplier, // Reduced from 1.2
+          vy: (Math.random() - 0.5) * 0.6 * speedMultiplier, // Reduced from 1.2
+          size: Math.random() * 1.8 + 0.6, // Reduced size range
         });
       }
     };
 
     const draw = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.08)";
+      // More transparent trail for lighter effect
+      ctx.fillStyle = "rgba(0, 0, 0, 0.04)"; // Reduced from 0.08
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      // Draw connections
+      // Draw connections - with reduced opacity
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const dx = particles[i].x - particles[j].x;
@@ -58,8 +59,9 @@ export default function NetworkAnimation({ slow = false }: { slow?: boolean }) {
           if (distance < connectionDistance) {
             const opacity = 1 - distance / connectionDistance;
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(0, 255, 100, ${opacity * 0.7})`;
-            ctx.lineWidth = 0.8;
+            // Reduced opacity from 0.7 to 0.25
+            ctx.strokeStyle = `rgba(0, 255, 100, ${opacity * 0.25})`;
+            ctx.lineWidth = 0.5; // Reduced from 0.8
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
             ctx.stroke();
@@ -67,7 +69,7 @@ export default function NetworkAnimation({ slow = false }: { slow?: boolean }) {
         }
       }
 
-      // Draw particles
+      // Draw particles - with reduced visibility
       particles.forEach((particle) => {
         ctx.beginPath();
         const gradient = ctx.createRadialGradient(
@@ -76,13 +78,13 @@ export default function NetworkAnimation({ slow = false }: { slow?: boolean }) {
           0,
           particle.x,
           particle.y,
-          particle.size * 3
+          particle.size * 2.5 // Reduced from 3
         );
-        gradient.addColorStop(0, "rgba(0, 255, 100, 1)");
-        gradient.addColorStop(0.5, "rgba(0, 255, 100, 0.5)");
-        gradient.addColorStop(1, "rgba(0, 255, 100, 0)");
+        gradient.addColorStop(0, "rgba(0, 255, 100, 0.5)"); // Reduced from 1
+        gradient.addColorStop(0.5, "rgba(0, 255, 100, 0.2)"); // Reduced from 0.5
+        gradient.addColorStop(1, "rgba(0, 255, 100, 0)"); // Keep transparent
         ctx.fillStyle = gradient;
-        ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+        ctx.arc(particle.x, particle.y, particle.size * 2, 0, Math.PI * 2); // Reduced radius multiplier
         ctx.fill();
 
         // Update position
