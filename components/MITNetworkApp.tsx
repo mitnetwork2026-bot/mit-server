@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { ConnectionProvider } from "@/contexts/ConnectionContext";
 import NetworkAnimation from "./NetworkAnimation";
 import AuthModal from "./AuthModal";
 import LoadingScreen from "./LoadingScreen";
@@ -11,23 +10,23 @@ import GlassHeader from "./GlassHeader";
 import GlassFooter from "./GlassFooter";
 import SideNavigation from "./SideNavigation";
 import NotificationPanel from "./NotificationPanel";
-import HomePage from "./HomePage";
-import NSPPage from "./NSPPage";
-import DeviceDataPage from "./DeviceDataPage";
-import MirrorWebPage from "./MirrorWebPage";
-import OnionWebPage from "./OnionWebPage";
-import RadarControllerPage from "./RadarControllerPage";
-import SatelliteDataPage from "./SatelliteDataPage";
-import SystemObservingPage from "./SystemObservingPage";
-import NodeTokenPage from "./NodeTokenPage";
-import MegaLogReaderPage from "./MegaLogReaderPage";
-import DeviceInfoPage from "./DeviceInfoPage";
-import DeviceAccessPage from "./DeviceAccessPage";
-import KaliLinuxPage from "./KaliLinuxPage";
-import SupportPage from "./SupportPage";
-import AboutPage from "./AboutPage";
-import ProfilePage from "./ProfilePage";
-import ServerNetworkPage from "./ServerNetworkPage";
+import HomePage from "./pages/HomePage";
+import NSPPage from "./pages/NSPPage";
+import DeviceDataPage from "./pages/DeviceDataPage";
+import MirrorWebPage from "./pages/MirrorWebPage";
+import OnionWebPage from "./pages/OnionWebPage";
+import RadarControllerPage from "./pages/RadarControllerPage";
+import SatelliteDataPage from "./pages/SatelliteDataPage";
+import SystemObservingPage from "./pages/SystemObservingPage";
+import NodeTokenPage from "./pages/NodeTokenPage";
+import MegaLogReaderPage from "./pages/MegaLogReaderPage";
+import DeviceInfoPage from "./pages/DeviceInfoPage";
+import DeviceAccessPage from "./pages/DeviceAccessPage";
+import KaliLinuxPage from "./pages/KaliLinuxPage";
+import SupportPage from "./pages/SupportPage";
+import AboutPage from "./pages/AboutPage";
+import ProfilePage from "./pages/ProfilePage";
+import ServerNetworkPage from "./pages/ServerNetworkPage";
 
 type AppState = "landing" | "loading" | "home";
 
@@ -106,9 +105,8 @@ export default function MITNetworkApp() {
   }
 
   return (
-    <ConnectionProvider>
-      <div className="relative min-h-screen overflow-hidden bg-black">
-        <NetworkAnimation slow={appState === "home"} />
+    <div className="relative min-h-screen overflow-hidden bg-black">
+      <NetworkAnimation slow={appState === "home"} />
 
       <AnimatePresence mode="wait">
         {appState === "landing" && (
@@ -253,7 +251,6 @@ export default function MITNetworkApp() {
         onClose={() => setShowAuthModal(false)}
         onSuccess={handleAuthSuccess}
       />
-      </div>
-    </ConnectionProvider>
+    </div>
   );
 }
