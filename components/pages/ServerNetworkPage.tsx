@@ -15,7 +15,7 @@ interface ConnectionLog {
   type: "info" | "success" | "warning" | "error";
 }
 
-// 35+ Countries with detailed server info
+// 50+ Countries with detailed server info
 const serverLocations = [
   { name: "Frankfurt", country: "Germany", flag: "🇩🇪", ping: 23, load: 45 },
   { name: "Berlin", country: "Germany", flag: "🇩🇪", ping: 25, load: 52 },
@@ -98,7 +98,7 @@ const connectionMessages = [
   { message: "Always-on VPN active", type: "success" as const },
 ];
 
-// 100+ Active monitoring messages
+// 100+ Active monitoring messages (cyclic)
 const activeMessages = [
   { message: "Packet encryption: Active", type: "success" as const },
   { message: "DNS leak protection: Enabled", type: "success" as const },
@@ -156,7 +156,12 @@ const activeMessages = [
   { message: "SNI encryption active", type: "success" as const },
 ];
 
-// localStorage helper for persistence
+// Global log queue for cross-page persistence
+let globalLogs: ConnectionLog[] = [];
+let logIndex = 0;
+let intervalId: NodeJS.Timeout | null = null;
+
+// Save connection state to localStorage
 const saveConnectionState = (state: any) => {
   if (typeof window !== 'undefined') {
     localStorage.setItem('vpnConnection', JSON.stringify(state));
@@ -185,7 +190,7 @@ export default function ServerNetworkPage() {
   const [connectionTime, setConnectionTime] = useState(0);
   const [dataTransferred, setDataTransferred] = useState({ up: 0, down: 0 });
 
-  // Load saved connection on mount
+  // Load saved connection and logs on mount
   useEffect(() => {
     const savedState = loadConnectionState();
     if (savedState && savedState.isConnected) {
@@ -193,14 +198,13 @@ export default function ServerNetworkPage() {
       setSelectedServer(savedState.selectedServer || serverLocations[0]);
       setConnectionTime(savedState.connectionTime || 0);
       setDataTransferred(savedState.dataTransferred || { up: 0, down: 0 });
-      // Add restoration log
-      const restoreLog: ConnectionLog = {
-        id: `log-${Date.now()}`,
-        timestamp: new Date(),
-        message: "Connection restored from previous session",
-        type: "success",
-      };
-      setLogs([restoreLog]);
+      
+      // Restore previous logs if any
+      if (savedState.logs && savedState.logs.length > 0) {
+        setLogs(savedState.logs);
+        globalLogs = savedState.logs;
+        logIndex = savedState.logIndex || 0;
+      }
     }
   }, []);
 
@@ -212,18 +216,20 @@ export default function ServerNetworkPage() {
         selectedServer,
         connectionTime,
         dataTransferred,
+        logs: globalLogs,
+        logIndex: logIndex,
         timestamp: Date.now(),
       });
     } else {
-      saveConnectionState({ isConnected: false });
+      saveConnectionState({ isConnected: false, logs: globalLogs, logIndex: logIndex });
     }
   }, [isConnected, selectedServer, connectionTime, dataTransferred]);
 
   // Timer for connection duration
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let timerInterval: NodeJS.Timeout;
     if (isConnected) {
-      interval = setInterval(() => {
+      timerInterval = setInterval(() => {
         setConnectionTime(prev => prev + 1);
         setDataTransferred(prev => ({
           up: prev.up + Math.random() * 0.5,
@@ -231,23 +237,63 @@ export default function ServerNetworkPage() {
         }));
       }, 1000);
     }
-    return () => clearInterval(interval);
+    return () => clearInterval(timerInterval);
   }, [isConnected]);
 
-  // Add random activity logs when connected (100+ unique logs)
+  // Global log interval that runs even when component unmounts
   useEffect(() => {
-    if (!isConnected) return;
+    if (isConnected && !intervalId) {
+      const allMessages = [...connectionMessages, ...activeMessages];
+      
+      intervalId = setInterval(() => {
+        if (typeof window !== 'undefined') {
+          // Cycle through messages (when reaches end, start from beginning)
+          const currentMessage = allMessages[logIndex % allMessages.length];
+          
+          const newLog: ConnectionLog = {
+            id: `log-${Date.now()}-${Math.random()}`,
+            timestamp: new Date(),
+            message: currentMessage.message,
+            type: currentMessage.type,
+          };
+          
+          // Add to global logs
+          globalLogs = [newLog, ...globalLogs].slice(0, 200);
+          logIndex++;
+          
+          // Save to localStorage
+          const savedState = loadConnectionState();
+          if (savedState && savedState.isConnected) {
+            saveConnectionState({
+              ...savedState,
+              logs: globalLogs,
+              logIndex: logIndex,
+            });
+          }
+          
+          // Update local state if component is mounted
+          setLogs(prev => [newLog, ...prev].slice(0, 200));
+        }
+      }, 2000);
+    } else if (!isConnected && intervalId) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
     
-    const allMessages = [...connectionMessages, ...activeMessages];
-    const interval = setInterval(() => {
-      if (Math.random() > 0.4) { // 60% chance to add a log
-        const randomMsg = allMessages[Math.floor(Math.random() * allMessages.length)];
-        addLog(randomMsg.message, randomMsg.type);
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
       }
-    }, 2000); // Add a log every 2 seconds on average
-
-    return () => clearInterval(interval);
+    };
   }, [isConnected]);
+
+  // Sync logs from global when component mounts/remounts
+  useEffect(() => {
+    if (globalLogs.length > 0) {
+      setLogs(globalLogs);
+    }
+  }, []);
 
   const addLog = (message: string, type: ConnectionLog["type"]) => {
     const newLog: ConnectionLog = {
@@ -256,7 +302,8 @@ export default function ServerNetworkPage() {
       message,
       type,
     };
-    setLogs(prev => [newLog, ...prev].slice(0, 200)); // Keep up to 200 logs
+    globalLogs = [newLog, ...globalLogs].slice(0, 200);
+    setLogs(prev => [newLog, ...prev].slice(0, 200));
   };
 
   const handleConnect = async () => {
@@ -270,15 +317,16 @@ export default function ServerNetworkPage() {
         setIsConnected(false);
         setConnectionTime(0);
         setDataTransferred({ up: 0, down: 0 });
+        // Don't clear logs on disconnect
       }, 1000);
       return;
     }
 
     setIsConnecting(true);
-    setLogs([]);
-
+    
+    // Don't clear logs on new connection, just add new ones
     for (let i = 0; i < connectionMessages.length; i++) {
-      await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 300));
+      await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 200));
       addLog(connectionMessages[i].message, connectionMessages[i].type);
     }
 
@@ -326,7 +374,7 @@ export default function ServerNetworkPage() {
           </div>
           <h1 className="text-2xl font-bold text-white">Server Network</h1>
           <p className="mt-2 text-sm text-emerald-400/60">
-            Secure VPN Connection Manager • {serverLocations.length} Countries
+            Secure VPN Connection Manager
           </p>
         </div>
 
@@ -441,11 +489,9 @@ export default function ServerNetworkPage() {
           </motion.button>
         </motion.div>
 
-        {/* Server Selection - Now with flags */}
+        {/* Server Selection - With flags */}
         <div className="mb-6">
-          <h3 className="mb-3 text-sm font-medium text-emerald-400/60">
-            Select Server • {serverLocations.length} Locations
-          </h3>
+          <h3 className="mb-3 text-sm font-medium text-emerald-400/60">Select Server</h3>
           <div className="max-h-96 overflow-y-auto space-y-2 pr-2">
             {serverLocations.map((server) => (
               <motion.button
@@ -491,13 +537,12 @@ export default function ServerNetworkPage() {
           </div>
         </div>
 
-        {/* Connection Logs - Now shows 100+ unique messages */}
+        {/* Connection Logs - Now with cyclic logs */}
         <div className="overflow-hidden rounded-2xl border border-emerald-500/20 bg-emerald-950/30 backdrop-blur-xl">
           <div className="flex items-center justify-between border-b border-emerald-500/20 p-4">
             <div className="flex items-center gap-2">
               <Database size={16} className="text-emerald-400" />
               <h3 className="font-medium text-white">Connection Logs</h3>
-              <span className="text-xs text-emerald-400/40">({logs.length}/200)</span>
             </div>
             <div className="flex items-center gap-2">
               {isConnected && (
@@ -546,7 +591,7 @@ export default function ServerNetworkPage() {
         <div className="mt-6 flex items-center justify-center gap-2 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
           <Lock size={16} className="text-emerald-400" />
           <span className="text-xs text-emerald-400/80">
-            Military-grade AES-256 encryption active • {serverLocations.length}+ Global Servers
+            Military-grade AES-256 encryption active
           </span>
         </div>
       </motion.div>
