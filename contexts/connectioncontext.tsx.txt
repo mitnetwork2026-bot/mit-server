@@ -1,0 +1,78 @@
+"use client";
+
+import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+
+interface ConnectionContextType {
+  isConnected: boolean;
+  isConnecting: boolean;
+  selectedServer: { name: string; country: string } | null;
+  connectionTime: number;
+  setIsConnected: (value: boolean) => void;
+  setIsConnecting: (value: boolean) => void;
+  setSelectedServer: (server: { name: string; country: string } | null) => void;
+  disconnect: () => void;
+}
+
+const ConnectionContext = createContext<ConnectionContextType | undefined>(undefined);
+
+export function ConnectionProvider({ children }: { children: ReactNode }) {
+  const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [selectedServer, setSelectedServer] = useState<{ name: string; country: string } | null>(null);
+  const [connectionTime, setConnectionTime] = useState(0);
+
+  // Keep connection alive across page navigation
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isConnected) {
+      interval = setInterval(() => {
+        setConnectionTime((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isConnected]);
+
+  // Handle page unload
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isConnected) {
+        setIsConnected(false);
+        setConnectionTime(0);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isConnected]);
+
+  const disconnect = () => {
+    setIsConnected(false);
+    setConnectionTime(0);
+    setSelectedServer(null);
+  };
+
+  return (
+    <ConnectionContext.Provider 
+      value={{ 
+        isConnected, 
+        isConnecting, 
+        selectedServer, 
+        connectionTime,
+        setIsConnected, 
+        setIsConnecting, 
+        setSelectedServer,
+        disconnect 
+      }}
+    >
+      {children}
+    </ConnectionContext.Provider>
+  );
+}
+
+export function useConnection() {
+  const context = useContext(ConnectionContext);
+  if (context === undefined) {
+    throw new Error("useConnection must be used within a ConnectionProvider");
+  }
+  return context;
+}
