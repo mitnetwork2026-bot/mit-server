@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useConnection } from "@/contexts/ConnectionContext";
 import { 
   Wifi, WifiOff, Server, Globe, Shield, Activity, 
   Zap, Clock, CheckCircle, AlertCircle, RefreshCw,
@@ -16,11 +17,41 @@ interface ConnectionLog {
 }
 
 const serverLocations = [
+  // Europe
   { name: "Frankfurt", country: "Germany", ping: 23, load: 45 },
-  { name: "Singapore", country: "Singapore", ping: 89, load: 62 },
-  { name: "New York", country: "USA", ping: 156, load: 38 },
-  { name: "Tokyo", country: "Japan", ping: 112, load: 71 },
   { name: "London", country: "UK", ping: 45, load: 55 },
+  { name: "Amsterdam", country: "Netherlands", ping: 35, load: 52 },
+  { name: "Paris", country: "France", ping: 38, load: 48 },
+  { name: "Stockholm", country: "Sweden", ping: 42, load: 41 },
+  { name: "Madrid", country: "Spain", ping: 52, load: 58 },
+  { name: "Milan", country: "Italy", ping: 48, load: 50 },
+  { name: "Zurich", country: "Switzerland", ping: 40, load: 46 },
+  
+  // Asia
+  { name: "Singapore", country: "Singapore", ping: 89, load: 62 },
+  { name: "Tokyo", country: "Japan", ping: 112, load: 71 },
+  { name: "Hong Kong", country: "Hong Kong", ping: 95, load: 65 },
+  { name: "Seoul", country: "South Korea", ping: 105, load: 68 },
+  { name: "Bangkok", country: "Thailand", ping: 78, load: 59 },
+  { name: "Mumbai", country: "India", ping: 145, load: 72 },
+  { name: "Bangalore", country: "India", ping: 148, load: 70 },
+  { name: "Dubai", country: "United Arab Emirates", ping: 68, load: 55 },
+  
+  // Americas
+  { name: "New York", country: "USA", ping: 156, load: 38 },
+  { name: "Los Angeles", country: "USA", ping: 178, load: 42 },
+  { name: "San Francisco", country: "USA", ping: 185, load: 48 },
+  { name: "Chicago", country: "USA", ping: 142, load: 45 },
+  { name: "Toronto", country: "Canada", ping: 138, load: 52 },
+  { name: "São Paulo", country: "Brazil", ping: 198, load: 61 },
+  { name: "Mexico City", country: "Mexico", ping: 165, load: 55 },
+  
+  // Oceania & Africa
+  { name: "Sydney", country: "Australia", ping: 225, load: 58 },
+  { name: "Auckland", country: "New Zealand", ping: 245, load: 52 },
+  { name: "Johannesburg", country: "South Africa", ping: 188, load: 64 },
+  { name: "Cairo", country: "Egypt", ping: 125, load: 67 },
+  { name: "Lagos", country: "Nigeria", ping: 158, load: 71 },
 ];
 
 const connectionMessages = [
@@ -49,18 +80,27 @@ const activeMessages = [
 ];
 
 export default function ServerNetworkPage() {
-  const [isConnected, setIsConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [selectedServer, setSelectedServer] = useState(serverLocations[0]);
+  const { 
+    isConnected, 
+    setIsConnected, 
+    isConnecting, 
+    setIsConnecting,
+    selectedServer,
+    setSelectedServer,
+    connectionTime
+  } = useConnection();
+  
+  const [selectedServerLocal, setSelectedServerLocal] = useState(serverLocations[0]);
   const [logs, setLogs] = useState<ConnectionLog[]>([]);
-  const [connectionTime, setConnectionTime] = useState(0);
   const [dataTransferred, setDataTransferred] = useState({ up: 0, down: 0 });
+  
+  // Use context server if available, otherwise use local
+  const activeServer = selectedServer || selectedServerLocal;
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isConnected) {
       interval = setInterval(() => {
-        setConnectionTime(prev => prev + 1);
         setDataTransferred(prev => ({
           up: prev.up + Math.random() * 0.5,
           down: prev.down + Math.random() * 2,
@@ -94,9 +134,10 @@ export default function ServerNetworkPage() {
       setTimeout(() => {
         addLog("VPN tunnel closed", "warning");
         addLog("Connection terminated", "info");
+        setIsConnecting(false);
         setIsConnected(false);
-        setConnectionTime(0);
         setDataTransferred({ up: 0, down: 0 });
+        setSelectedServer(null);
       }, 1000);
       return;
     }
@@ -111,7 +152,8 @@ export default function ServerNetworkPage() {
 
     setIsConnecting(false);
     setIsConnected(true);
-    addLog(`Connected to ${selectedServer.name}, ${selectedServer.country}`, "success");
+    const server = selectedServer || selectedServerLocal;
+    addLog(`Connected to ${server.name}, ${server.country}`, "success");
   };
 
   const formatTime = (seconds: number) => {
@@ -216,13 +258,13 @@ export default function ServerNetworkPage() {
             <h2 className={`text-xl font-bold ${isConnected ? "text-emerald-400" : "text-gray-400"}`}>
               {isConnecting ? "Connecting..." : isConnected ? "Protected" : "Disconnected"}
             </h2>
-            {isConnected && (
+            {isConnected && activeServer && (
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="mt-1 text-sm text-emerald-400/60"
               >
-                {selectedServer.name}, {selectedServer.country}
+                {activeServer.name}, {activeServer.country}
               </motion.p>
             )}
           </div>
@@ -246,7 +288,7 @@ export default function ServerNetworkPage() {
               </div>
               <div className="rounded-xl border border-emerald-500/20 bg-black/30 p-3 text-center">
                 <Signal size={16} className="mx-auto mb-1 text-emerald-400/60" />
-                <p className="text-sm font-mono text-white">{selectedServer.ping}ms</p>
+                <p className="text-sm font-mono text-white">{activeServer?.ping || 0}ms</p>
                 <p className="text-xs text-emerald-400/40">Ping</p>
               </div>
             </motion.div>
@@ -271,16 +313,16 @@ export default function ServerNetworkPage() {
         {/* Server Selection */}
         <div className="mb-6">
           <h3 className="mb-3 text-sm font-medium text-emerald-400/60">Select Server</h3>
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-96 overflow-y-auto">
             {serverLocations.map((server) => (
               <motion.button
                 key={server.name}
-                onClick={() => !isConnected && setSelectedServer(server)}
+                onClick={() => !isConnected && setSelectedServerLocal(server)}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
                 disabled={isConnected}
                 className={`flex w-full items-center justify-between rounded-xl border p-4 transition-all ${
-                  selectedServer.name === server.name
+                  activeServer.name === server.name
                     ? "border-emerald-500/50 bg-emerald-500/20"
                     : "border-emerald-500/20 bg-emerald-950/30 hover:bg-emerald-950/50"
                 } ${isConnected ? "opacity-50" : ""}`}
@@ -307,7 +349,7 @@ export default function ServerNetworkPage() {
                       <span className="text-xs text-emerald-400/40">{server.load}%</span>
                     </div>
                   </div>
-                  {selectedServer.name === server.name && (
+                  {activeServer.name === server.name && (
                     <CheckCircle size={20} className="text-emerald-400" />
                   )}
                 </div>
