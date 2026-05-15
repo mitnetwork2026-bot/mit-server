@@ -219,9 +219,6 @@ export default function Message({
             </motion.div>
           </motion.div>
         )}
-            {isEdited && <span className="text-xs text-emerald-400/40 ml-1">(edited)</span>}
-          </div>
-        )}
       </div>
     </motion.div>
   );
