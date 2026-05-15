@@ -27,7 +27,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
     try {
       if (isSignUp) {
-        await signUp(email, password);
+        if (!name.trim()) {
+          setError("Please enter your name");
+          setLoading(false);
+          return;
+        }
+        await signUp(email, password, name);
       } else {
         await signIn(email, password);
       }
