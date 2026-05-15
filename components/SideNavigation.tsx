@@ -10,7 +10,7 @@ import {
   Radar,
   Satellite,
   Eye,
-  Coins,
+  MessageCircle,
   FileText,
   Info,
   Terminal,
@@ -30,6 +30,7 @@ interface SideNavigationProps {
 
 const menuItems = [
   { id: "home", label: "Home", icon: Shield },
+  { id: "michat", label: "MiChat", icon: MessageCircle },
   { id: "server-network", label: "Server Network", icon: Server },
   { id: "nsp", label: "NSP", icon: Shield },
   { id: "device-data", label: "Device Data", icon: Smartphone },
@@ -38,7 +39,6 @@ const menuItems = [
   { id: "radar-controller", label: "Radar Controller", icon: Radar },
   { id: "satellite-data", label: "Satellite Data", icon: Satellite },
   { id: "system-observing", label: "System Observing", icon: Eye },
-  { id: "node-token", label: "Node Token", icon: Coins },
   { id: "mega-log-reader", label: "Mega Log Reader", icon: FileText },
   { id: "device-info", label: "Device Info", icon: Info },
   { id: "device-access", label: "Device Access", icon: Wifi },
