@@ -2,7 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Skull, AlertTriangle, Terminal, HardDrive, Fingerprint } from 'lucide-react';
+import { 
+  Menu, X, Skull, AlertTriangle, Terminal, HardDrive, 
+  Fingerprint, Cpu, Shield, Zap, Wifi, Battery, 
+  Globe, Lock, Key, Database, Cloud, Server, 
+  Bug, Ghost, Radiation, Biohazard, Nuclear 
+} from 'lucide-react';
 
 export default function MiChatPage() {
   // Malware prank states
@@ -13,13 +18,14 @@ export default function MiChatPage() {
   const [showDeviceDetails, setShowDeviceDetails] = useState(false);
   const [selectedFileCount, setSelectedFileCount] = useState(1547);
   const [customFileSize, setCustomFileSize] = useState(2.4);
+  const [selectedMalwareType, setSelectedMalwareType] = useState('');
   const [malwareComplete, setMalwareComplete] = useState(false);
   const [showMobileUsers, setShowMobileUsers] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<string | null>(null);
   
   // Device information (fake but realistic)
   const [deviceInfo] = useState({
     serialNumber: 'SN-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
+    deviceId: 'DEV-' + Math.random().toString(36).substring(2, 15).toUpperCase(),
     motherboard: 'MSI-' + Math.floor(Math.random() * 9999),
     cpu: navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} cores` : '8 cores',
     platform: navigator.platform || 'Windows NT 10.0',
@@ -35,24 +41,113 @@ export default function MiChatPage() {
     firewall: 'Inactive'
   });
 
-  // Mock data for chat
-  const [messages, setMessages] = useState([
-    { id: '1', text: 'Hello everyone!', userId: 'user1', userName: 'John', timestamp: new Date() },
-    { id: '2', text: 'Hi there!', userId: 'user2', userName: 'Sarah', timestamp: new Date() },
-  ]);
-  const [users, setUsers] = useState([
-    { id: 'user1', name: 'John', status: 'online', avatar: 'https://i.pravatar.cc/150?img=1' },
-    { id: 'user2', name: 'Sarah', status: 'online', avatar: 'https://i.pravatar.cc/150?img=2' },
-    { id: 'user3', name: 'Mike', status: 'offline', avatar: 'https://i.pravatar.cc/150?img=3' },
-  ]);
-  const [currentUser, setCurrentUser] = useState({ uid: 'currentUser', name: 'You' });
-  const [newMessage, setNewMessage] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  // Malware types list (100+ types)
+  const malwareTypes = [
+    { name: 'Ransomware X-19', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Trojan Horse v3.2', icon: Bug, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'SpyEye Keylogger', icon: Eye, danger: 'High', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'Rootkit Ninja', icon: Shield, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Worm Eternal', icon: Zap, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Cryptolocker V', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Adware Explosion', icon: AlertTriangle, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'Backdoor Stealth', icon: Key, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Data Wiper Pro', icon: Database, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Miner Botnet', icon: Cpu, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'Phishing Kit', icon: Globe, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Exploit Pack', icon: Zap, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'DDoS Agent', icon: Cloud, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'Fake AV Scam', icon: Shield, danger: 'Low', color: 'from-green-600 to-green-800' },
+    { name: 'Browser Hijacker', icon: Globe, danger: 'Low', color: 'from-green-600 to-green-800' },
+    { name: 'RAT Remote Access', icon: Server, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Ghost Ransomware', icon: Ghost, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Radiation Malware', icon: Radiation, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Biohazard Worm', icon: Biohazard, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Nuclear Exploit', icon: Nuclear, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Stealth Logger X', icon: Fingerprint, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Crypto Miner Pro', icon: Cpu, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'DarkGate Trojan', icon: Skull, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Emotet Bot', icon: Zap, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Ryuk Ransomware', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'TrickBot Malware', icon: Bug, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Zeus Trojan', icon: Shield, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Conficker Worm', icon: Zap, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Stuxnet Clone', icon: Nuclear, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Duqu Spyware', icon: Eye, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Flame Malware', icon: Radiation, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Gauss Backdoor', icon: Key, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'MiniDuke Rootkit', icon: Shield, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Shamoon Wiper', icon: Database, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'DarkSeoul Malware', icon: Skull, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Regin Spy Kit', icon: Eye, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Equation Group', icon: Cpu, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Sony Wiper', icon: Database, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Shamoon 2.0', icon: Radiation, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'BadRabbit Ransom', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'NotPetya Variant', icon: Biohazard, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'WannaCry Legacy', icon: Skull, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Sality Virus', icon: Bug, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Virut Botnet', icon: Cloud, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Ramnit Worm', icon: Zap, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'Gamarue Trojan', icon: Bug, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Tinba Banking', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Shylock Malware', icon: Key, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'NeverQuest Spy', icon: Eye, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Dridex Bot', icon: Zap, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Locky Ransomware', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Cerber Ransom', icon: Skull, danger: 'Critical', color: 'from-red-600-to-red-800' },
+    { name: 'GlobeImposter', icon: Globe, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Crysis Ransomware', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Spora Ransomware', icon: Biohazard, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Philadelphia Ransom', icon: Radiation, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Jigsaw Ransomware', icon: Skull, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'HiddenTear Variant', icon: Bug, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'EDA2 Ransomware', icon: Zap, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'Fake Ransomware', icon: AlertTriangle, danger: 'Low', color: 'from-green-600 to-green-800' },
+    { name: 'Scareware X', icon: Shield, danger: 'Low', color: 'from-green-600 to-green-800' },
+    { name: 'TechSupport Scam', icon: Globe, danger: 'Low', color: 'from-green-600 to-green-800' },
+    { name: 'FBI Virus', icon: Shield, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'Police Virus', icon: Lock, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'Moneypak Malware', icon: AlertTriangle, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'Reveton Trojan', icon: Skull, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Urausy Ransom', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'CoinVault Malware', icon: Database, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Bitcryptor Virus', icon: Cpu, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'TeslaCrypt Legacy', icon: Zap, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Alpha Ransomware', icon: Biohazard, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Beta Malware', icon: Bug, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Gamma Trojan', icon: Skull, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Delta Exploit', icon: Zap, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Epsilon Worm', icon: Radiation, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Zeta Rootkit', icon: Shield, danger: 'Critical', color: 'from-red-600-to-red-800' },
+    { name: 'Eta Backdoor', icon: Key, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Theta RAT', icon: Server, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Iota Spyware', icon: Eye, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Kappa Keylogger', icon: Fingerprint, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
+    { name: 'Lambda Miner', icon: Cpu, danger: 'Low', color: 'from-green-600 to-green-800' },
+    { name: 'Mu Botnet', icon: Cloud, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Nu Wiper', icon: Database, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Xi Exploit', icon: Nuclear, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Omicron Trojan', icon: Bug, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Pi Ransomware', icon: Lock, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Rho Malware', icon: Ghost, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Sigma Worm', icon: Zap, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Tau Rootkit', icon: Shield, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Upsilon Spy', icon: Eye, danger: 'High', color: 'from-orange-600 to-orange-800' },
+    { name: 'Phi Backdoor', icon: Key, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Chi RAT', icon: Server, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
+    { name: 'Psi Wiper', icon: Database, danger: 'Critical', color: 'from-red-600 to-red-800' },
+    { name: 'Omega Malware', icon: Biohazard, danger: 'Extreme', color: 'from-purple-600 to-purple-800' }
+  ];
 
-  const onlineCount = users.filter(u => u.status === 'online').length;
+  const Eye = (props: any) => <Shield {...props} />;
 
   // Handle malware confirmation
   const handleMalwareConfirm = () => {
+    if (!selectedMalwareType) {
+      alert('Please select a malware type first!');
+      return;
+    }
+    
     setMalwareConfirmed(true);
     setShowDeviceDetails(false);
     
@@ -79,25 +174,21 @@ export default function MiChatPage() {
         clearInterval(interval);
         setMalwareComplete(true);
         
-        // Add final scary logs
-        setLoadingLogs(prev => [...prev, '[✓] MALWARE ACTIVATED SUCCESSFULLY!', '[⚠️] YOUR DEVICE IS NOW UNDER CONTROL', '[💀] ALL DATA HAS BEEN BACKDOORED']);
+        setLoadingLogs(prev => [...prev, `[✓] ${selectedMalwareType} ACTIVATED SUCCESSFULLY!`, '[⚠️] YOUR DEVICE IS NOW UNDER CONTROL', '[💀] ALL DATA HAS BEEN BACKDOORED']);
       }
       
       setLoadingProgress(currentStep);
       
-      // Add random logs
       if (Math.random() > 0.7 && currentStep < totalSteps) {
         const randomLog = logs[Math.floor(Math.random() * logs.length)];
         setLoadingLogs(prev => [...prev, randomLog]);
       }
       
-      // Add file count progress
       if (currentStep % 20 === 0 && currentStep > 0) {
         const filesProcessed = Math.floor((currentStep / 100) * selectedFileCount);
         setLoadingLogs(prev => [...prev, `[FILE] Processing ${filesProcessed} / ${selectedFileCount} files... (${Math.floor((currentStep / 100) * 100)}%)`]);
       }
       
-      // Add data transfer logs
       if (currentStep % 25 === 0 && currentStep > 0) {
         const dataTransferred = ((currentStep / 100) * customFileSize).toFixed(1);
         setLoadingLogs(prev => [...prev, `[DATA] Transferring ${dataTransferred}GB / ${customFileSize}GB to remote server...`]);
@@ -125,55 +216,40 @@ export default function MiChatPage() {
     }
   };
 
-  // Chat functions
-  const sendMessage = () => {
-    if (newMessage.trim()) {
-      setMessages([...messages, {
-        id: Date.now().toString(),
-        text: newMessage,
-        userId: currentUser.uid,
-        userName: currentUser.name,
-        timestamp: new Date()
-      }]);
-      setNewMessage('');
-    }
-  };
-
-  const handleTyping = () => {
-    setIsTyping(true);
-    setTimeout(() => setIsTyping(false), 1000);
-  };
-
   return (
-    <div className="min-h-screen flex gap-4 px-2 sm:px-4 pb-32 pt-24 bg-gradient-to-br from-gray-900 to-black">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black">
       
-      {/* Malware Prank Modal */}
+      {/* Malware Prank Modal - Liquid Glass Style */}
       <AnimatePresence>
         {showMalwareModal && !malwareConfirmed && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0.8, y: -50, opacity: 0 }}
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.8, y: 50, opacity: 0 }}
               transition={{ type: "spring", damping: 20 }}
-              className="bg-gradient-to-br from-red-950 via-black to-red-950 border-2 border-red-500 rounded-2xl p-6 max-w-2xl w-full mx-4 shadow-2xl"
+              className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl p-6"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                backdropFilter: 'blur(20px)'
+              }}
             >
               {/* Header */}
-              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-red-500/30">
+              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/20">
                 <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 0.8 }}
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
                 >
-                  <Skull size={40} className="text-red-500" />
+                  <Skull size={40} className="text-red-400" />
                 </motion.div>
                 <div>
-                  <h2 className="text-2xl font-bold text-red-500 font-mono">⚠️ MALWARE DETECTED ⚠️</h2>
-                  <p className="text-red-400/80 text-sm font-mono">Unauthorized access attempt in progress</p>
+                  <h2 className="text-2xl font-bold text-white font-mono">⚠️ SECURITY ALERT ⚠️</h2>
+                  <p className="text-white/60 text-sm font-mono">Potential malware detected on this device</p>
                 </div>
               </div>
 
@@ -181,7 +257,7 @@ export default function MiChatPage() {
               <div className="mb-4">
                 <button
                   onClick={() => setShowDeviceDetails(!showDeviceDetails)}
-                  className="flex items-center gap-2 text-red-400 hover:text-red-300 transition-colors mb-3 font-mono text-sm"
+                  className="flex items-center gap-2 text-white/70 hover:text-white transition-colors mb-3 font-mono text-sm bg-white/10 px-3 py-1 rounded-lg"
                 >
                   <Fingerprint size={16} />
                   <span>{showDeviceDetails ? '▼ Hide' : '▶ Show'} Device Information</span>
@@ -192,42 +268,45 @@ export default function MiChatPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="bg-black/80 rounded-lg p-4 border border-red-500/30 font-mono text-xs space-y-2"
+                    className="bg-black/40 rounded-lg p-4 border border-white/20 font-mono text-xs space-y-2 backdrop-blur-sm"
                   >
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="text-red-400">Serial Number:</div>
-                      <div className="text-red-300 font-bold">{deviceInfo.serialNumber}</div>
+                      <div className="text-white/60">Device ID:</div>
+                      <div className="text-white/90 font-bold">{deviceInfo.deviceId}</div>
                       
-                      <div className="text-red-400">Motherboard:</div>
-                      <div className="text-red-300">{deviceInfo.motherboard}</div>
+                      <div className="text-white/60">Serial Number:</div>
+                      <div className="text-white/90 font-bold">{deviceInfo.serialNumber}</div>
                       
-                      <div className="text-red-400">CPU:</div>
-                      <div className="text-red-300">{deviceInfo.cpu}</div>
+                      <div className="text-white/60">Motherboard:</div>
+                      <div className="text-white/90">{deviceInfo.motherboard}</div>
                       
-                      <div className="text-red-400">RAM:</div>
-                      <div className="text-red-300">{deviceInfo.ram}</div>
+                      <div className="text-white/60">CPU:</div>
+                      <div className="text-white/90">{deviceInfo.cpu}</div>
                       
-                      <div className="text-red-400">OS Version:</div>
-                      <div className="text-red-300">{deviceInfo.osVersion}</div>
+                      <div className="text-white/60">RAM:</div>
+                      <div className="text-white/90">{deviceInfo.ram}</div>
                       
-                      <div className="text-red-400">IP Address:</div>
-                      <div className="text-red-300">{deviceInfo.ipAddress}</div>
+                      <div className="text-white/60">OS Version:</div>
+                      <div className="text-white/90">{deviceInfo.osVersion}</div>
                       
-                      <div className="text-red-400">MAC Address:</div>
-                      <div className="text-red-300">{deviceInfo.macAddress}</div>
+                      <div className="text-white/60">IP Address:</div>
+                      <div className="text-white/90">{deviceInfo.ipAddress}</div>
                       
-                      <div className="text-red-400">Antivirus:</div>
-                      <div className="text-red-300 animate-pulse">{deviceInfo.antivirus}</div>
+                      <div className="text-white/60">MAC Address:</div>
+                      <div className="text-white/90">{deviceInfo.macAddress}</div>
                       
-                      <div className="text-red-400">Firewall:</div>
-                      <div className="text-red-300 animate-pulse">{deviceInfo.firewall}</div>
+                      <div className="text-white/60">Antivirus:</div>
+                      <div className="text-red-400 animate-pulse">{deviceInfo.antivirus}</div>
+                      
+                      <div className="text-white/60">Firewall:</div>
+                      <div className="text-red-400 animate-pulse">{deviceInfo.firewall}</div>
                     </div>
                     
-                    <div className="mt-3 pt-2 border-t border-red-500/20">
-                      <div className="text-red-400 mb-1">Profile Image URL:</div>
+                    <div className="mt-3 pt-2 border-t border-white/20">
+                      <div className="text-white/60 mb-1">Profile Image URL:</div>
                       <div className="flex items-center gap-2">
-                        <img src={deviceInfo.imageUrl} alt="Device" className="w-10 h-10 rounded border border-red-500" crossOrigin="anonymous" />
-                        <code className="text-red-300 text-xs break-all">{deviceInfo.imageUrl}</code>
+                        <img src={deviceInfo.imageUrl} alt="Device" className="w-10 h-10 rounded border border-white/30" crossOrigin="anonymous" />
+                        <code className="text-white/70 text-xs break-all">{deviceInfo.imageUrl}</code>
                       </div>
                     </div>
                   </motion.div>
@@ -236,21 +315,58 @@ export default function MiChatPage() {
 
               {/* Warning Message */}
               <motion.div
-                animate={{ backgroundColor: ['rgba(220,38,38,0.1)', 'rgba(220,38,38,0.3)', 'rgba(220,38,38,0.1)'] }}
+                animate={{ backgroundColor: ['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)'] }}
                 transition={{ repeat: Infinity, duration: 1.5 }}
-                className="bg-red-950/30 border-l-4 border-red-500 p-3 mb-4 rounded"
+                className="bg-white/5 border-l-4 border-red-500 p-3 mb-4 rounded"
               >
-                <p className="text-red-300 text-sm font-mono">
-                  ⚠️ A malicious software is attempting to infect your device. Your personal data, files, and privacy are at risk. 
-                  All device information including serial number, IP address, and MAC address has been compromised.
+                <p className="text-white/80 text-sm font-mono">
+                  ⚠️ A malicious software is attempting to access your device. Your personal data, files, and privacy are at risk. 
+                  All device information including Device ID, Serial Number, IP address, and MAC address has been compromised.
                 </p>
               </motion.div>
 
+              {/* Malware Type Selection - Scrollable List */}
+              <div className="mb-4">
+                <label className="text-white/80 text-sm font-mono block mb-2 flex items-center gap-2">
+                  <Bug size={14} />
+                  Select Malware Type (100+ options):
+                </label>
+                <div className="bg-black/40 rounded-lg border border-white/20 p-2 max-h-48 overflow-y-auto backdrop-blur-sm">
+                  <div className="grid grid-cols-2 gap-2">
+                    {malwareTypes.map((malware, idx) => {
+                      const Icon = malware.icon;
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => setSelectedMalwareType(malware.name)}
+                          className={`flex items-center gap-2 p-2 rounded-lg text-left transition-all ${
+                            selectedMalwareType === malware.name
+                              ? 'bg-white/20 border border-white/40'
+                              : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                          }`}
+                        >
+                          <Icon size={16} className="text-red-400" />
+                          <div className="flex-1">
+                            <p className="text-white/90 text-xs font-mono">{malware.name}</p>
+                            <p className="text-white/40 text-xs">Danger: {malware.danger}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                {selectedMalwareType && (
+                  <p className="text-green-400 text-xs font-mono mt-2">
+                    ✓ Selected: {selectedMalwareType}
+                  </p>
+                )}
+              </div>
+
               {/* Custom File Selection */}
               <div className="mb-4">
-                <label className="text-red-400 text-sm font-mono block mb-2 flex items-center gap-2">
+                <label className="text-white/80 text-sm font-mono block mb-2 flex items-center gap-2">
                   <HardDrive size={14} />
-                  Select malware payload size:
+                  Select payload size:
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {fileOptions.map((opt, idx) => (
@@ -259,10 +375,10 @@ export default function MiChatPage() {
                       onClick={() => handleFileCountSelect(opt.value, opt.size)}
                       className={`px-3 py-2 rounded-lg text-xs font-mono transition-all ${
                         selectedFileCount === opt.value && opt.value !== 'custom'
-                          ? 'bg-red-600 text-white border-red-400'
+                          ? 'bg-white/20 text-white border border-white/40'
                           : opt.value === 'custom' && selectedFileCount === 0
-                          ? 'bg-red-600 text-white'
-                          : 'bg-red-950/50 text-red-400 border border-red-500/30 hover:bg-red-900/50'
+                          ? 'bg-white/20 text-white border border-white/40'
+                          : 'bg-white/10 text-white/70 border border-white/20 hover:bg-white/20'
                       }`}
                     >
                       {opt.label}
@@ -276,20 +392,20 @@ export default function MiChatPage() {
                       type="number"
                       placeholder="Custom file count"
                       onChange={(e) => setSelectedFileCount(parseInt(e.target.value) || 0)}
-                      className="flex-1 bg-black border border-red-500 rounded-lg px-3 py-2 text-red-300 text-sm font-mono"
+                      className="flex-1 bg-black/40 border border-white/20 rounded-lg px-3 py-2 text-white text-sm font-mono backdrop-blur-sm"
                     />
                     <input
                       type="number"
                       step="0.1"
                       placeholder="Size (GB)"
                       onChange={(e) => setCustomFileSize(parseFloat(e.target.value) || 0)}
-                      className="flex-1 bg-black border border-red-500 rounded-lg px-3 py-2 text-red-300 text-sm font-mono"
+                      className="flex-1 bg-black/40 border border-white/20 rounded-lg px-3 py-2 text-white text-sm font-mono backdrop-blur-sm"
                     />
                   </div>
                 )}
                 
                 {selectedFileCount > 0 && (
-                  <p className="text-red-400/70 text-xs font-mono mt-2">
+                  <p className="text-white/50 text-xs font-mono mt-2">
                     Payload: {selectedFileCount.toLocaleString()} files • {customFileSize}GB data
                   </p>
                 )}
@@ -301,7 +417,7 @@ export default function MiChatPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowMalwareModal(false)}
-                  className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-mono py-2 rounded-lg transition-colors"
+                  className="flex-1 bg-white/10 hover:bg-white/20 text-white font-mono py-2 rounded-lg transition-colors border border-white/20"
                 >
                   Cancel
                 </motion.button>
@@ -309,7 +425,7 @@ export default function MiChatPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleMalwareConfirm}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-mono py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 bg-red-500/80 hover:bg-red-600/80 text-white font-mono py-2 rounded-lg transition-colors flex items-center justify-center gap-2 backdrop-blur-sm"
                 >
                   <AlertTriangle size={16} />
                   Confirm Infection
@@ -320,39 +436,43 @@ export default function MiChatPage() {
         )}
       </AnimatePresence>
 
-      {/* Loading Animation with Logs */}
+      {/* Loading Animation with Logs - Liquid Glass */}
       <AnimatePresence>
         {malwareConfirmed && !malwareComplete && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/98 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
-              className="bg-gradient-to-b from-red-950 to-black border-2 border-red-500 rounded-2xl p-6 max-w-2xl w-full mx-4"
+              className="relative w-full max-w-2xl rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 p-6"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                backdropFilter: 'blur(20px)'
+              }}
             >
               <div className="flex items-center gap-3 mb-4">
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
                 >
-                  <Terminal size={32} className="text-red-500" />
+                  <Terminal size={32} className="text-red-400" />
                 </motion.div>
-                <h3 className="text-xl font-bold text-red-500 font-mono">INJECTING MALWARE...</h3>
+                <h3 className="text-xl font-bold text-white font-mono">INJECTING {selectedMalwareType || 'MALWARE'}...</h3>
               </div>
               
               {/* Progress Bar */}
               <div className="mb-4">
-                <div className="flex justify-between text-xs text-red-400 font-mono mb-1">
+                <div className="flex justify-between text-xs text-white/60 font-mono mb-1">
                   <span>Deploying payload</span>
                   <span>{loadingProgress}%</span>
                 </div>
-                <div className="w-full bg-red-950 rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
                   <motion.div
-                    className="bg-red-500 h-full rounded-full"
+                    className="bg-gradient-to-r from-red-500 to-purple-500 h-full rounded-full"
                     initial={{ width: "0%" }}
                     animate={{ width: `${loadingProgress}%` }}
                     transition={{ duration: 0.2 }}
@@ -361,29 +481,30 @@ export default function MiChatPage() {
               </div>
               
               {/* File Size Display */}
-              <div className="bg-black/80 rounded-lg p-3 mb-3 border border-red-500/30">
-                <div className="flex justify-between text-xs font-mono text-red-400">
+              <div className="bg-black/30 rounded-lg p-3 mb-3 border border-white/20 backdrop-blur-sm">
+                <div className="flex justify-between text-xs font-mono text-white/70">
                   <span>📁 Target Files: {selectedFileCount.toLocaleString()}</span>
                   <span>💾 Data Size: {customFileSize}GB</span>
+                  <span>🦠 Malware: {selectedMalwareType}</span>
                 </div>
               </div>
               
               {/* Live Logs */}
-              <div className="bg-black/90 rounded-lg p-3 h-64 overflow-y-auto font-mono text-xs">
+              <div className="bg-black/30 rounded-lg p-3 h-64 overflow-y-auto font-mono text-xs backdrop-blur-sm">
                 <AnimatePresence>
                   {loadingLogs.map((log, index) => (
                     <motion.div
                       key={index}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="text-red-400 mb-1"
+                      className="text-white/70 mb-1"
                     >
                       {log}
                     </motion.div>
                   ))}
                 </AnimatePresence>
                 {loadingLogs.length === 0 && (
-                  <div className="text-red-500/50 animate-pulse">Initializing connection...</div>
+                  <div className="text-white/40 animate-pulse">Initializing connection...</div>
                 )}
               </div>
             </motion.div>
@@ -391,88 +512,79 @@ export default function MiChatPage() {
         )}
       </AnimatePresence>
 
-      {/* Success Modal */}
+      {/* Success Modal - Small Liquid Glass */}
       <AnimatePresence>
         {malwareComplete && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
           >
             <motion.div
               initial={{ scale: 0.8, rotateX: -90 }}
               animate={{ scale: 1, rotateX: 0 }}
               transition={{ type: "spring", damping: 15 }}
-              className="bg-gradient-to-br from-red-950 via-black to-red-950 border-2 border-red-500 rounded-2xl p-8 max-w-md w-full mx-4 text-center"
+              className="relative max-w-md w-full mx-4 rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 p-6 text-center"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+                backdropFilter: 'blur(20px)'
+              }}
             >
               <motion.div
-                animate={{ scale: [1, 1.2, 1] }}
+                animate={{ scale: [1, 1.1, 1] }}
                 transition={{ repeat: Infinity, duration: 1 }}
               >
-                <Skull size={80} className="text-red-500 mx-auto mb-4" />
+                <Skull size={60} className="text-red-400 mx-auto mb-3" />
               </motion.div>
-              <h2 className="text-3xl font-bold text-red-500 font-mono mb-2">DEVICE COMPROMISED!</h2>
-              <p className="text-red-400 mb-4 font-mono text-sm">
-                Malware successfully deployed on this device
+              <h2 className="text-2xl font-bold text-white font-mono mb-2">DEVICE COMPROMISED!</h2>
+              <p className="text-white/70 mb-3 font-mono text-sm">
+                {selectedMalwareType} successfully deployed
               </p>
-              <div className="bg-black/80 p-3 rounded-lg mb-4 text-left">
-                <p className="text-red-400 text-xs font-mono">📊 Infection Report:</p>
-                <p className="text-red-300 text-xs font-mono mt-1">• Files infected: {selectedFileCount.toLocaleString()}</p>
-                <p className="text-red-300 text-xs font-mono">• Data stolen: {customFileSize}GB</p>
-                <p className="text-red-300 text-xs font-mono">• Serial Number: {deviceInfo.serialNumber}</p>
-                <p className="text-red-300 text-xs font-mono">• Backdoor port: {Math.floor(Math.random() * 65535)}</p>
+              <div className="bg-black/30 p-3 rounded-lg mb-4 text-left text-xs">
+                <p className="text-white/70 font-mono">📊 Infection Report:</p>
+                <p className="text-white/60 font-mono mt-1">• Malware: {selectedMalwareType}</p>
+                <p className="text-white/60 font-mono">• Files infected: {selectedFileCount.toLocaleString()}</p>
+                <p className="text-white/60 font-mono">• Data stolen: {customFileSize}GB</p>
+                <p className="text-white/60 font-mono">• Device ID: {deviceInfo.deviceId}</p>
               </div>
               <button
                 onClick={() => window.location.reload()}
-                className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg font-mono transition-colors"
+                className="bg-red-500/80 hover:bg-red-600/80 text-white font-bold py-2 px-6 rounded-lg font-mono transition-colors backdrop-blur-sm"
               >
-                Close (System Already Breached)
+                Close
               </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Original Chat UI */}
+      {/* Original Chat UI - Liquid Glass Style (Empty but beautiful) */}
       {!showMalwareModal && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3 }}
-          className="w-full flex gap-4"
+          className="w-full flex gap-4 px-2 sm:px-4 pb-32 pt-24"
         >
-          {/* Desktop Users Sidebar */}
-          <div className="w-72 hidden lg:flex flex-col bg-gray-900/50 rounded-xl backdrop-blur-sm p-4">
-            <h3 className="text-white font-bold mb-3">Online Users ({onlineCount})</h3>
+          {/* Desktop Users Sidebar - Liquid Glass */}
+          <div className="w-72 hidden lg:flex flex-col rounded-2xl backdrop-blur-xl bg-white/5 border border-white/20 p-4">
+            <h3 className="text-white font-bold mb-3 flex items-center gap-2">
+              <Shield size={16} className="text-emerald-400" />
+              Online Users
+            </h3>
             <div className="space-y-2">
-              {users.map(user => (
-                <div
-                  key={user.id}
-                  onClick={() => setSelectedUser(user.id)}
-                  className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                    selectedUser === user.id ? 'bg-emerald-500/20' : 'hover:bg-gray-800'
-                  }`}
-                >
-                  <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full" crossOrigin="anonymous" />
-                  <div>
-                    <p className="text-white text-sm">{user.name}</p>
-                    <p className={`text-xs ${user.status === 'online' ? 'text-green-400' : 'text-gray-500'}`}>
-                      {user.status === 'online' ? 'Online' : 'Offline'}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              <div className="text-white/40 text-sm text-center py-10">Chat system disabled for security testing</div>
             </div>
           </div>
 
-          {/* Chat Window */}
+          {/* Chat Window - Liquid Glass */}
           <div className="flex-1 flex flex-col min-w-0">
             {/* Header */}
             <motion.div
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.3, delay: 0.1 }}
-              className="mb-3 sm:mb-4 rounded-xl sm:rounded-2xl border border-emerald-500/20 bg-gradient-to-r from-emerald-950/50 to-black/50 p-3 sm:p-4 backdrop-blur-xl flex items-center justify-between"
+              className="mb-3 sm:mb-4 rounded-2xl backdrop-blur-xl bg-white/5 border border-white/20 p-3 sm:p-4 flex items-center justify-between"
             >
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center">
@@ -480,7 +592,7 @@ export default function MiChatPage() {
                 </div>
                 <div className="min-w-0">
                   <h1 className="text-base sm:text-lg font-bold text-white truncate">MiChat</h1>
-                  <p className="text-xs text-emerald-400/60">Group Chat • {onlineCount} Online</p>
+                  <p className="text-xs text-emerald-400/60">System Security Mode</p>
                 </div>
               </div>
 
@@ -489,98 +601,39 @@ export default function MiChatPage() {
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowMobileUsers(!showMobileUsers)}
-                className="lg:hidden p-2 rounded-lg hover:bg-emerald-500/10 transition-colors flex-shrink-0"
+                className="lg:hidden p-2 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0"
               >
                 {showMobileUsers ? (
-                  <X size={20} className="text-emerald-400" />
+                  <X size={20} className="text-white" />
                 ) : (
-                  <Menu size={20} className="text-emerald-400" />
+                  <Menu size={20} className="text-white" />
                 )}
               </motion.button>
             </motion.div>
 
-            {/* Mobile Users Dropdown */}
-            <AnimatePresence>
-              {showMobileUsers && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="mb-3 lg:hidden bg-gray-900 rounded-xl p-4"
-                >
-                  <div className="space-y-2">
-                    {users.map(user => (
-                      <div
-                        key={user.id}
-                        onClick={() => {
-                          setSelectedUser(user.id);
-                          setShowMobileUsers(false);
-                        }}
-                        className="flex items-center gap-3 p-2 rounded-lg cursor-pointer hover:bg-gray-800"
-                      >
-                        <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full" crossOrigin="anonymous" />
-                        <div>
-                          <p className="text-white text-sm">{user.name}</p>
-                          <p className={`text-xs ${user.status === 'online' ? 'text-green-400' : 'text-gray-500'}`}>
-                            {user.status === 'online' ? 'Online' : 'Offline'}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto mb-4 space-y-3 p-4 bg-black/30 rounded-xl">
-              {messages.map(message => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.userId === currentUser.uid ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[70%] p-3 rounded-lg ${
-                      message.userId === currentUser.uid
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-gray-800 text-white'
-                    }`}
-                  >
-                    {message.userId !== currentUser.uid && (
-                      <p className="text-xs text-emerald-400 mb-1">{message.userName}</p>
-                    )}
-                    <p className="text-sm">{message.text}</p>
-                    <p className="text-xs opacity-70 mt-1">
-                      {new Date(message.timestamp).toLocaleTimeString()}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              {isTyping && (
-                <div className="text-gray-400 text-sm">Someone is typing...</div>
-              )}
+            {/* Messages Area - Empty State */}
+            <div className="flex-1 overflow-y-auto mb-4 p-4 rounded-xl backdrop-blur-sm bg-white/5 border border-white/20">
+              <div className="flex flex-col items-center justify-center h-full text-center">
+                <Shield size={48} className="text-emerald-400/40 mb-3" />
+                <p className="text-white/40 font-mono">Chat system temporarily disabled</p>
+                <p className="text-white/30 text-sm font-mono mt-1">Security protocol active</p>
+              </div>
             </div>
 
-            {/* Input */}
+            {/* Input - Disabled */}
             <div className="flex gap-2">
               <input
                 type="text"
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                onFocus={handleTyping}
-                placeholder="Type a message..."
-                className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                disabled
+                placeholder="Chat system disabled - Security mode active"
+                className="flex-1 bg-white/5 backdrop-blur-sm text-white/40 rounded-lg px-4 py-2 border border-white/20 cursor-not-allowed"
               />
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={sendMessage}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+              <button
+                disabled
+                className="bg-white/10 text-white/40 px-6 py-2 rounded-lg font-semibold cursor-not-allowed border border-white/20"
               >
                 Send
-              </motion.button>
+              </button>
             </div>
           </div>
         </motion.div>
