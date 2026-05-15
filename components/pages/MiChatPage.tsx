@@ -6,7 +6,7 @@ import {
   Menu, X, Skull, AlertTriangle, Terminal, HardDrive, 
   Fingerprint, Cpu, Shield, Zap, Wifi, Battery, 
   Globe, Lock, Key, Database, Cloud, Server, 
-  Bug, Ghost, Radiation, Biohazard, Nuclear 
+  Bug, Ghost 
 } from 'lucide-react';
 
 export default function MiChatPage() {
@@ -43,103 +43,94 @@ export default function MiChatPage() {
 
   // Malware types list (100+ types)
   const malwareTypes = [
-    { name: 'Ransomware X-19', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Trojan Horse v3.2', icon: Bug, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'SpyEye Keylogger', icon: Eye, danger: 'High', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'Rootkit Ninja', icon: Shield, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Worm Eternal', icon: Zap, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Cryptolocker V', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Adware Explosion', icon: AlertTriangle, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'Backdoor Stealth', icon: Key, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Data Wiper Pro', icon: Database, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Miner Botnet', icon: Cpu, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'Phishing Kit', icon: Globe, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Exploit Pack', icon: Zap, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'DDoS Agent', icon: Cloud, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'Fake AV Scam', icon: Shield, danger: 'Low', color: 'from-green-600 to-green-800' },
-    { name: 'Browser Hijacker', icon: Globe, danger: 'Low', color: 'from-green-600 to-green-800' },
-    { name: 'RAT Remote Access', icon: Server, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Ghost Ransomware', icon: Ghost, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Radiation Malware', icon: Radiation, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Biohazard Worm', icon: Biohazard, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Nuclear Exploit', icon: Nuclear, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Stealth Logger X', icon: Fingerprint, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Crypto Miner Pro', icon: Cpu, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'DarkGate Trojan', icon: Skull, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Emotet Bot', icon: Zap, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Ryuk Ransomware', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'TrickBot Malware', icon: Bug, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Zeus Trojan', icon: Shield, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Conficker Worm', icon: Zap, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Stuxnet Clone', icon: Nuclear, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Duqu Spyware', icon: Eye, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Flame Malware', icon: Radiation, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Gauss Backdoor', icon: Key, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'MiniDuke Rootkit', icon: Shield, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Shamoon Wiper', icon: Database, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'DarkSeoul Malware', icon: Skull, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Regin Spy Kit', icon: Eye, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Equation Group', icon: Cpu, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Sony Wiper', icon: Database, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Shamoon 2.0', icon: Radiation, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'BadRabbit Ransom', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'NotPetya Variant', icon: Biohazard, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'WannaCry Legacy', icon: Skull, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Sality Virus', icon: Bug, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Virut Botnet', icon: Cloud, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Ramnit Worm', icon: Zap, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'Gamarue Trojan', icon: Bug, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Tinba Banking', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Shylock Malware', icon: Key, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'NeverQuest Spy', icon: Eye, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Dridex Bot', icon: Zap, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Locky Ransomware', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Cerber Ransom', icon: Skull, danger: 'Critical', color: 'from-red-600-to-red-800' },
-    { name: 'GlobeImposter', icon: Globe, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Crysis Ransomware', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Spora Ransomware', icon: Biohazard, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Philadelphia Ransom', icon: Radiation, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Jigsaw Ransomware', icon: Skull, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'HiddenTear Variant', icon: Bug, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'EDA2 Ransomware', icon: Zap, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'Fake Ransomware', icon: AlertTriangle, danger: 'Low', color: 'from-green-600 to-green-800' },
-    { name: 'Scareware X', icon: Shield, danger: 'Low', color: 'from-green-600 to-green-800' },
-    { name: 'TechSupport Scam', icon: Globe, danger: 'Low', color: 'from-green-600 to-green-800' },
-    { name: 'FBI Virus', icon: Shield, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'Police Virus', icon: Lock, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'Moneypak Malware', icon: AlertTriangle, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'Reveton Trojan', icon: Skull, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Urausy Ransom', icon: Lock, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'CoinVault Malware', icon: Database, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Bitcryptor Virus', icon: Cpu, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'TeslaCrypt Legacy', icon: Zap, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Alpha Ransomware', icon: Biohazard, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Beta Malware', icon: Bug, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Gamma Trojan', icon: Skull, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Delta Exploit', icon: Zap, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Epsilon Worm', icon: Radiation, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Zeta Rootkit', icon: Shield, danger: 'Critical', color: 'from-red-600-to-red-800' },
-    { name: 'Eta Backdoor', icon: Key, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Theta RAT', icon: Server, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Iota Spyware', icon: Eye, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Kappa Keylogger', icon: Fingerprint, danger: 'Medium', color: 'from-yellow-600 to-yellow-800' },
-    { name: 'Lambda Miner', icon: Cpu, danger: 'Low', color: 'from-green-600 to-green-800' },
-    { name: 'Mu Botnet', icon: Cloud, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Nu Wiper', icon: Database, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Xi Exploit', icon: Nuclear, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Omicron Trojan', icon: Bug, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Pi Ransomware', icon: Lock, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Rho Malware', icon: Ghost, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Sigma Worm', icon: Zap, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Tau Rootkit', icon: Shield, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Upsilon Spy', icon: Eye, danger: 'High', color: 'from-orange-600 to-orange-800' },
-    { name: 'Phi Backdoor', icon: Key, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Chi RAT', icon: Server, danger: 'Extreme', color: 'from-purple-600 to-purple-800' },
-    { name: 'Psi Wiper', icon: Database, danger: 'Critical', color: 'from-red-600 to-red-800' },
-    { name: 'Omega Malware', icon: Biohazard, danger: 'Extreme', color: 'from-purple-600 to-purple-800' }
+    { name: 'Ransomware X-19', danger: 'Critical' },
+    { name: 'Trojan Horse v3.2', danger: 'High' },
+    { name: 'SpyEye Keylogger', danger: 'High' },
+    { name: 'Rootkit Ninja', danger: 'Critical' },
+    { name: 'Worm Eternal', danger: 'Extreme' },
+    { name: 'Cryptolocker V', danger: 'Critical' },
+    { name: 'Adware Explosion', danger: 'Medium' },
+    { name: 'Backdoor Stealth', danger: 'High' },
+    { name: 'Data Wiper Pro', danger: 'Extreme' },
+    { name: 'Miner Botnet', danger: 'Medium' },
+    { name: 'Phishing Kit', danger: 'High' },
+    { name: 'Exploit Pack', danger: 'Critical' },
+    { name: 'DDoS Agent', danger: 'Medium' },
+    { name: 'Fake AV Scam', danger: 'Low' },
+    { name: 'Browser Hijacker', danger: 'Low' },
+    { name: 'RAT Remote Access', danger: 'Critical' },
+    { name: 'Ghost Ransomware', danger: 'Extreme' },
+    { name: 'Stealth Logger X', danger: 'High' },
+    { name: 'Crypto Miner Pro', danger: 'Medium' },
+    { name: 'DarkGate Trojan', danger: 'Critical' },
+    { name: 'Emotet Bot', danger: 'High' },
+    { name: 'Ryuk Ransomware', danger: 'Critical' },
+    { name: 'TrickBot Malware', danger: 'High' },
+    { name: 'Zeus Trojan', danger: 'Critical' },
+    { name: 'Conficker Worm', danger: 'High' },
+    { name: 'Duqu Spyware', danger: 'Critical' },
+    { name: 'Gauss Backdoor', danger: 'High' },
+    { name: 'MiniDuke Rootkit', danger: 'Critical' },
+    { name: 'Shamoon Wiper', danger: 'Extreme' },
+    { name: 'DarkSeoul Malware', danger: 'Critical' },
+    { name: 'Regin Spy Kit', danger: 'High' },
+    { name: 'Equation Group', danger: 'Extreme' },
+    { name: 'Sony Wiper', danger: 'High' },
+    { name: 'BadRabbit Ransom', danger: 'Critical' },
+    { name: 'WannaCry Legacy', danger: 'Critical' },
+    { name: 'Sality Virus', danger: 'High' },
+    { name: 'Virut Botnet', danger: 'High' },
+    { name: 'Ramnit Worm', danger: 'Medium' },
+    { name: 'Gamarue Trojan', danger: 'High' },
+    { name: 'Tinba Banking', danger: 'Critical' },
+    { name: 'Shylock Malware', danger: 'High' },
+    { name: 'NeverQuest Spy', danger: 'Critical' },
+    { name: 'Dridex Bot', danger: 'High' },
+    { name: 'Locky Ransomware', danger: 'Critical' },
+    { name: 'Cerber Ransom', danger: 'Critical' },
+    { name: 'GlobeImposter', danger: 'High' },
+    { name: 'Crysis Ransomware', danger: 'Critical' },
+    { name: 'Spora Ransomware', danger: 'High' },
+    { name: 'Philadelphia Ransom', danger: 'Critical' },
+    { name: 'Jigsaw Ransomware', danger: 'Extreme' },
+    { name: 'HiddenTear Variant', danger: 'Medium' },
+    { name: 'EDA2 Ransomware', danger: 'Medium' },
+    { name: 'Fake Ransomware', danger: 'Low' },
+    { name: 'Scareware X', danger: 'Low' },
+    { name: 'TechSupport Scam', danger: 'Low' },
+    { name: 'FBI Virus', danger: 'Medium' },
+    { name: 'Police Virus', danger: 'Medium' },
+    { name: 'Moneypak Malware', danger: 'Medium' },
+    { name: 'Reveton Trojan', danger: 'High' },
+    { name: 'Urausy Ransom', danger: 'Critical' },
+    { name: 'CoinVault Malware', danger: 'High' },
+    { name: 'Bitcryptor Virus', danger: 'Critical' },
+    { name: 'TeslaCrypt Legacy', danger: 'High' },
+    { name: 'Alpha Ransomware', danger: 'Critical' },
+    { name: 'Beta Malware', danger: 'High' },
+    { name: 'Gamma Trojan', danger: 'Extreme' },
+    { name: 'Delta Exploit', danger: 'Critical' },
+    { name: 'Epsilon Worm', danger: 'High' },
+    { name: 'Zeta Rootkit', danger: 'Critical' },
+    { name: 'Eta Backdoor', danger: 'High' },
+    { name: 'Theta RAT', danger: 'Extreme' },
+    { name: 'Iota Spyware', danger: 'High' },
+    { name: 'Kappa Keylogger', danger: 'Medium' },
+    { name: 'Lambda Miner', danger: 'Low' },
+    { name: 'Mu Botnet', danger: 'High' },
+    { name: 'Nu Wiper', danger: 'Critical' },
+    { name: 'Xi Exploit', danger: 'Extreme' },
+    { name: 'Omicron Trojan', danger: 'Critical' },
+    { name: 'Pi Ransomware', danger: 'High' },
+    { name: 'Rho Malware', danger: 'Extreme' },
+    { name: 'Sigma Worm', danger: 'High' },
+    { name: 'Tau Rootkit', danger: 'Critical' },
+    { name: 'Upsilon Spy', danger: 'High' },
+    { name: 'Phi Backdoor', danger: 'Critical' },
+    { name: 'Chi RAT', danger: 'Extreme' },
+    { name: 'Psi Wiper', danger: 'Critical' },
+    { name: 'Omega Malware', danger: 'Extreme' }
   ];
-
-  const Eye = (props: any) => <Shield {...props} />;
 
   // Handle malware confirmation
   const handleMalwareConfirm = () => {
@@ -329,30 +320,27 @@ export default function MiChatPage() {
               <div className="mb-4">
                 <label className="text-white/80 text-sm font-mono block mb-2 flex items-center gap-2">
                   <Bug size={14} />
-                  Select Malware Type (100+ options):
+                  Select Malware Type ({malwareTypes.length}+ options):
                 </label>
                 <div className="bg-black/40 rounded-lg border border-white/20 p-2 max-h-48 overflow-y-auto backdrop-blur-sm">
                   <div className="grid grid-cols-2 gap-2">
-                    {malwareTypes.map((malware, idx) => {
-                      const Icon = malware.icon;
-                      return (
-                        <button
-                          key={idx}
-                          onClick={() => setSelectedMalwareType(malware.name)}
-                          className={`flex items-center gap-2 p-2 rounded-lg text-left transition-all ${
-                            selectedMalwareType === malware.name
-                              ? 'bg-white/20 border border-white/40'
-                              : 'bg-white/5 hover:bg-white/10 border border-white/10'
-                          }`}
-                        >
-                          <Icon size={16} className="text-red-400" />
-                          <div className="flex-1">
-                            <p className="text-white/90 text-xs font-mono">{malware.name}</p>
-                            <p className="text-white/40 text-xs">Danger: {malware.danger}</p>
-                          </div>
-                        </button>
-                      );
-                    })}
+                    {malwareTypes.map((malware, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedMalwareType(malware.name)}
+                        className={`flex items-center gap-2 p-2 rounded-lg text-left transition-all ${
+                          selectedMalwareType === malware.name
+                            ? 'bg-white/20 border border-white/40'
+                            : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                        }`}
+                      >
+                        <Skull size={16} className="text-red-400" />
+                        <div className="flex-1">
+                          <p className="text-white/90 text-xs font-mono">{malware.name}</p>
+                          <p className="text-white/40 text-xs">Danger: {malware.danger}</p>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
                 {selectedMalwareType && (
