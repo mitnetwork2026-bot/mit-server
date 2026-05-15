@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { MoreVertical, Bell, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface GlassHeaderProps {
   onMenuClick: () => void;
@@ -10,6 +11,12 @@ interface GlassHeaderProps {
 }
 
 export default function GlassHeader({ onMenuClick, onNotificationClick, onProfileClick }: GlassHeaderProps) {
+  const { userProfile } = useAuth();
+
+  const getInitial = (name: string) => {
+    return name.charAt(0).toUpperCase();
+  };
+
   return (
     <motion.header
       initial={{ y: -100, opacity: 0 }}
@@ -49,9 +56,21 @@ export default function GlassHeader({ onMenuClick, onNotificationClick, onProfil
               onClick={onProfileClick}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
-              className="rounded-xl p-2 text-emerald-400/60 transition-colors hover:bg-emerald-500/10 hover:text-emerald-400"
+              className="flex items-center gap-2 rounded-xl p-2 text-emerald-400/60 transition-colors hover:bg-emerald-500/10 hover:text-emerald-400"
             >
-              <User size={18} className="sm:h-5 sm:w-5" />
+              {userProfile?.profileImage ? (
+                <img
+                  src={userProfile.profileImage}
+                  alt="Profile"
+                  className="h-6 w-6 rounded-lg object-cover sm:h-7 sm:w-7"
+                />
+              ) : (
+                <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500/30 sm:h-7 sm:w-7">
+                  <span className="text-xs font-semibold text-emerald-400">
+                    {getInitial(userProfile?.displayName || "U")}
+                  </span>
+                </div>
+              )}
             </motion.button>
             <motion.button
               onClick={onMenuClick}
