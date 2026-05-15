@@ -27,6 +27,7 @@ import SupportPage from "./pages/SupportPage";
 import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import ServerNetworkPage from "./pages/ServerNetworkPage";
+import MiChatPage from "./pages/MiChatPage";
 
 type AppState = "landing" | "loading" | "home";
 
@@ -55,6 +56,8 @@ export default function MITNetworkApp() {
 
   const renderPage = () => {
     switch (currentPage) {
+      case "michat":
+        return <MiChatPage />;
       case "profile":
         return <ProfilePage />;
       case "server-network":
