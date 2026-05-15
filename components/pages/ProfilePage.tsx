@@ -101,14 +101,25 @@ export default function ProfilePage() {
     });
   };
 
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 pb-24 pt-24">
+        <p className="text-emerald-400">Please login to view profile</p>
+      </div>
+    );
+  }
+
   if (!profile || !editedProfile) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4 pb-24 pt-24">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="h-12 w-12 rounded-full border-2 border-emerald-500/30 border-t-emerald-500"
-        />
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            className="mx-auto h-12 w-12 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 mb-4"
+          />
+          <p className="text-sm text-emerald-400/60">Loading profile...</p>
+        </div>
       </div>
     );
   }
