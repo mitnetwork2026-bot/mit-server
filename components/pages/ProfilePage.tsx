@@ -8,10 +8,11 @@ import {
   Lock, Eye, EyeOff, Check, AlertCircle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { ref, set, get, update } from "firebase/database";
+import { database } from "@/lib/firebase";
 
 interface UserProfile {
   displayName: string;
-  email: string;
   bio: string;
   phone: string;
   location: string;
@@ -26,28 +27,67 @@ interface UserProfile {
   status: string;
 }
 
+const defaultProfile: UserProfile = {
+  displayName: "",
+  bio: "Cyber Security Expert | Network Specialist",
+  phone: "",
+  location: "",
+  website: "",
+  github: "",
+  twitter: "",
+  linkedin: "",
+  profileImage: "",
+  coverImage: "",
+  joinDate: new Date().toISOString(),
+  skills: ["Network Security", "Penetration Testing", "Cryptography"],
+  status: "online",
+};
+
 export default function ProfilePage() {
-  const { user, userProfile, updateUserProfile } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<UserProfile>(defaultProfile);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedProfile, setEditedProfile] = useState<UserProfile | null>(null);
+  const [editedProfile, setEditedProfile] = useState<UserProfile>(defaultProfile);
   const [saving, setSaving] = useState(false);
   const [newSkill, setNewSkill] = useState("");
   const profileImageRef = useRef<HTMLInputElement>(null);
   const coverImageRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (userProfile) {
-      setProfile(userProfile);
-      setEditedProfile(userProfile);
+    if (user) {
+      loadProfile();
     }
-  }, [userProfile]);
+  }, [user]);
+
+  const loadProfile = async () => {
+    if (!user) return;
+    try {
+      const profileRef = ref(database, `users/${user.uid}/profile`);
+      const snapshot = await get(profileRef);
+      if (snapshot.exists()) {
+        setProfile({ ...defaultProfile, ...snapshot.val() });
+        setEditedProfile({ ...defaultProfile, ...snapshot.val() });
+      } else {
+        const newProfile = {
+          ...defaultProfile,
+          displayName: user.displayName || user.email?.split("@")[0] || "User",
+          joinDate: new Date().toISOString(),
+        };
+        await set(profileRef, newProfile);
+        setProfile(newProfile);
+        setEditedProfile(newProfile);
+      }
+    } catch (error) {
+      console.error("Error loading profile:", error);
+    }
+  };
 
   const saveProfile = async () => {
-    if (!editedProfile) return;
+    if (!user) return;
     setSaving(true);
     try {
-      await updateUserProfile(editedProfile);
+      const profileRef = ref(database, `users/${user.uid}/profile`);
+      await update(profileRef, editedProfile);
       setProfile(editedProfile);
       setIsEditing(false);
     } catch (error) {
@@ -58,40 +98,35 @@ export default function ProfilePage() {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: "profile" | "cover") => {
     const file = e.target.files?.[0];
-    if (!file || !editedProfile) return;
+    if (!file) return;
 
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
       if (type === "profile") {
-        setEditedProfile(prev => prev ? { ...prev, profileImage: base64 } : null);
+        setEditedProfile(prev => ({ ...prev, profileImage: base64 }));
       } else {
-        setEditedProfile(prev => prev ? { ...prev, coverImage: base64 } : null);
+        setEditedProfile(prev => ({ ...prev, coverImage: base64 }));
       }
     };
     reader.readAsDataURL(file);
   };
 
   const addSkill = () => {
-    if (!editedProfile) return;
     if (newSkill.trim() && !editedProfile.skills.includes(newSkill.trim())) {
-      setEditedProfile(prev =>
-        prev ? ({
-          ...prev,
-          skills: [...prev.skills, newSkill.trim()],
-        }) : null
-      );
+      setEditedProfile(prev => ({
+        ...prev,
+        skills: [...prev.skills, newSkill.trim()],
+      }));
       setNewSkill("");
     }
   };
 
   const removeSkill = (skill: string) => {
-    setEditedProfile(prev =>
-      prev ? ({
-        ...prev,
-        skills: prev.skills.filter(s => s !== skill),
-      }) : null
-    );
+    setEditedProfile(prev => ({
+      ...prev,
+      skills: prev.skills.filter(s => s !== skill),
+    }));
   };
 
   const formatDate = (dateString: string) => {
@@ -100,18 +135,6 @@ export default function ProfilePage() {
       month: "long",
     });
   };
-
-  if (!profile || !editedProfile) {
-    return (
-      <div className="flex min-h-screen items-center justify-center px-4 pb-24 pt-24">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="h-12 w-12 rounded-full border-2 border-emerald-500/30 border-t-emerald-500"
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen px-4 pb-24 pt-24">
@@ -243,7 +266,7 @@ export default function ProfilePage() {
               <input
                 type="text"
                 value={editedProfile.displayName}
-                onChange={(e) => setEditedProfile(prev => prev ? { ...prev, displayName: e.target.value } : null)}
+                onChange={(e) => setEditedProfile(prev => ({ ...prev, displayName: e.target.value }))}
                 className="mb-2 w-full rounded-xl border border-emerald-500/30 bg-emerald-950/50 px-4 py-2 text-center text-xl font-bold text-white focus:border-emerald-500 focus:outline-none"
                 placeholder="Your Name"
               />
@@ -251,12 +274,12 @@ export default function ProfilePage() {
               <h1 className="text-xl font-bold text-white sm:text-2xl">{profile.displayName || "User"}</h1>
             )}
             
-            <p className="mt-1 text-sm text-emerald-400/60">{profile.email}</p>
+            <p className="mt-1 text-sm text-emerald-400/60">{user?.email}</p>
             
             {isEditing ? (
               <textarea
                 value={editedProfile.bio}
-                onChange={(e) => setEditedProfile(prev => prev ? { ...prev, bio: e.target.value } : null)}
+                onChange={(e) => setEditedProfile(prev => ({ ...prev, bio: e.target.value }))}
                 className="mt-3 w-full rounded-xl border border-emerald-500/30 bg-emerald-950/50 px-4 py-2 text-center text-sm text-emerald-400/80 focus:border-emerald-500 focus:outline-none"
                 placeholder="Write something about yourself..."
                 rows={2}
@@ -291,7 +314,7 @@ export default function ProfilePage() {
                 <input
                   type="tel"
                   value={editedProfile.phone}
-                  onChange={(e) => setEditedProfile(prev => prev ? { ...prev, phone: e.target.value } : null)}
+                  onChange={(e) => setEditedProfile(prev => ({ ...prev, phone: e.target.value }))}
                   className="flex-1 bg-transparent text-sm text-white placeholder-emerald-400/40 focus:outline-none"
                   placeholder="Phone number"
                 />
@@ -307,7 +330,7 @@ export default function ProfilePage() {
                 <input
                   type="text"
                   value={editedProfile.location}
-                  onChange={(e) => setEditedProfile(prev => prev ? { ...prev, location: e.target.value } : null)}
+                  onChange={(e) => setEditedProfile(prev => ({ ...prev, location: e.target.value }))}
                   className="flex-1 bg-transparent text-sm text-white placeholder-emerald-400/40 focus:outline-none"
                   placeholder="Location"
                 />
@@ -323,7 +346,7 @@ export default function ProfilePage() {
                 <input
                   type="url"
                   value={editedProfile.website}
-                  onChange={(e) => setEditedProfile(prev => prev ? { ...prev, website: e.target.value } : null)}
+                  onChange={(e) => setEditedProfile(prev => ({ ...prev, website: e.target.value }))}
                   className="flex-1 bg-transparent text-sm text-white placeholder-emerald-400/40 focus:outline-none"
                   placeholder="Website URL"
                 />
@@ -350,7 +373,7 @@ export default function ProfilePage() {
                     <input
                       type="text"
                       value={editedProfile.github}
-                      onChange={(e) => setEditedProfile(prev => prev ? { ...prev, github: e.target.value } : null)}
+                      onChange={(e) => setEditedProfile(prev => ({ ...prev, github: e.target.value }))}
                       className="w-full min-w-0 bg-transparent text-xs text-white placeholder-emerald-400/40 focus:outline-none"
                       placeholder="GitHub"
                     />
@@ -360,7 +383,7 @@ export default function ProfilePage() {
                     <input
                       type="text"
                       value={editedProfile.twitter}
-                      onChange={(e) => setEditedProfile(prev => prev ? { ...prev, twitter: e.target.value } : null)}
+                      onChange={(e) => setEditedProfile(prev => ({ ...prev, twitter: e.target.value }))}
                       className="w-full min-w-0 bg-transparent text-xs text-white placeholder-emerald-400/40 focus:outline-none"
                       placeholder="Twitter"
                     />
@@ -370,7 +393,7 @@ export default function ProfilePage() {
                     <input
                       type="text"
                       value={editedProfile.linkedin}
-                      onChange={(e) => setEditedProfile(prev => prev ? { ...prev, linkedin: e.target.value } : null)}
+                      onChange={(e) => setEditedProfile(prev => ({ ...prev, linkedin: e.target.value }))}
                       className="w-full min-w-0 bg-transparent text-xs text-white placeholder-emerald-400/40 focus:outline-none"
                       placeholder="LinkedIn"
                     />
@@ -418,12 +441,7 @@ export default function ProfilePage() {
                     type="text"
                     value={newSkill}
                     onChange={(e) => setNewSkill(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        addSkill();
-                      }
-                    }}
+                    onKeyPress={(e) => e.key === "Enter" && addSkill()}
                     className="w-24 rounded-lg border border-emerald-500/30 bg-emerald-950/50 px-2 py-1.5 text-xs text-white placeholder-emerald-400/40 focus:outline-none"
                     placeholder="Add skill"
                   />
