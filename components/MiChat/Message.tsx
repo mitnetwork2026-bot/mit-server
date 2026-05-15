@@ -59,40 +59,71 @@ export default function Message({
       .toUpperCase();
   };
 
+  const messageVariants = {
+    hidden: {
+      opacity: 0,
+      y: 20,
+      scale: 0.8,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: 'spring',
+        damping: 15,
+        stiffness: 100,
+        duration: 0.3,
+      },
+    },
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      variants={messageVariants}
+      initial="hidden"
+      animate="visible"
       className={`flex gap-3 ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`}
     >
       {!isCurrentUser && (
-        <div className="flex flex-col items-center">
+        <motion.div 
+          whileHover={{ scale: 1.05 }}
+          className="flex flex-col items-center"
+        >
           {senderProfileImage ? (
             <img
               src={senderProfileImage}
               alt={senderName}
-              className="h-8 w-8 rounded-full object-cover"
+              className="h-8 w-8 rounded-full object-cover hover:ring-2 hover:ring-emerald-400 transition-all"
             />
           ) : (
-            <div className="h-8 w-8 rounded-full bg-emerald-500/30 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-full bg-emerald-500/30 flex items-center justify-center hover:bg-emerald-500/50 transition-colors">
               <span className="text-xs font-bold text-emerald-400">{getInitials(senderName)}</span>
             </div>
           )}
-        </div>
+        </motion.div>
       )}
 
       <div className={`flex flex-col ${isCurrentUser ? 'items-end' : 'items-start'}`}>
         {!isCurrentUser && (
-          <p className="text-xs text-emerald-400/60 mb-1 px-1">{senderName}</p>
+          <motion.p 
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-xs text-emerald-400/60 mb-1"
+          >
+            {senderName}
+          </motion.p>
         )}
 
         <div className="relative group">
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className={`rounded-2xl px-4 py-2.5 max-w-xs ${
+            whileTap={{ scale: 0.98 }}
+            transition={{ type: 'spring', damping: 20 }}
+            className={`rounded-2xl px-4 py-2 max-w-xs shadow-md transition-all ${
               isCurrentUser
-                ? 'bg-emerald-600 text-white rounded-br-none'
-                : 'bg-emerald-950/50 border border-emerald-500/20 text-emerald-100 rounded-bl-none'
+                ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-br-sm hover:from-emerald-500 hover:to-emerald-600'
+                : 'bg-emerald-950/50 border border-emerald-500/20 text-emerald-100 rounded-bl-sm hover:border-emerald-500/40'
             }`}
           >
             {isEditing ? (
@@ -102,10 +133,16 @@ export default function Message({
                 onBlur={handleEdit}
                 onKeyPress={(e) => e.key === 'Enter' && handleEdit()}
                 autoFocus
-                className="bg-transparent outline-none w-full text-sm"
+                className="bg-transparent outline-none w-full"
               />
             ) : (
-              <p className="text-sm break-words">{text}</p>
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-sm"
+              >
+                {text}
+              </motion.p>
             )}
           </motion.div>
 
@@ -160,18 +197,28 @@ export default function Message({
 
         {/* Timestamp and seen indicator */}
         {isCurrentUser && (
-          <div className="flex items-center gap-1 mt-1">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center gap-1 mt-1"
+          >
             <p className="text-xs text-emerald-400/60">
-              {new Date(timestamp).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
+              {new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              {isEdited && ' (edited)'}
             </p>
-            {seenCount > 1 ? (
-              <CheckCheck size={14} className="text-emerald-400" />
-            ) : (
-              <Check size={14} className="text-emerald-400/60" />
-            )}
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+            >
+              {seenCount > 1 ? (
+                <CheckCheck size={14} className="text-emerald-400" />
+              ) : (
+                <Check size={14} className="text-emerald-400/60" />
+              )}
+            </motion.div>
+          </motion.div>
+        )}
             {isEdited && <span className="text-xs text-emerald-400/40 ml-1">(edited)</span>}
           </div>
         )}
