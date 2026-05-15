@@ -1,12 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { X, Mail, Lock, User, Chrome, Loader2, Camera, Upload } from "lucide-react";
-import { storage, db } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { doc, setDoc } from "firebase/firestore";
+import { X, Mail, Lock, User, Chrome, Loader2 } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -19,53 +16,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
-  const [profilePicture, setProfilePicture] = useState<File | null>(null);
-  const [profilePicturePreview, setProfilePicturePreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { signIn, signUp, signInWithGoogle, user } = useAuth();
-
-  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProfilePicture(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePicturePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const uploadProfilePicture = async (userId: string): Promise<string | null> => {
-    if (!profilePicture) return null;
-    
-    try {
-      const storageRef = ref(storage, `profile_pictures/${userId}`);
-      await uploadBytes(storageRef, profilePicture);
-      const downloadURL = await getDownloadURL(storageRef);
-      return downloadURL;
-    } catch (error) {
-      console.error("Error uploading profile picture:", error);
-      return null;
-    }
-  };
-
-  const saveUserToFirestore = async (userId: string, email: string, name: string, photoURL: string | null) => {
-    try {
-      await setDoc(doc(db, "users", userId), {
-        email: email,
-        name: name,
-        photoURL: photoURL || "",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-    } catch (error) {
-      console.error("Error saving user to Firestore:", error);
-      throw error;
-    }
-  };
+  const { signIn, signUp, signInWithGoogle } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,23 +27,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
     try {
       if (isSignUp) {
-        const userCredential = await signUp(email, password);
-        const user = userCredential.user;
-        
-        let photoURL = null;
-        if (profilePicture) {
-          photoURL = await uploadProfilePicture(user.uid);
+        if (!name.trim()) {
+          setError("Please enter your name");
+          setLoading(false);
+          return;
         }
-        
-        await saveUserToFirestore(user.uid, email, name, photoURL);
-        
-        // Update user profile in Firebase Auth
-        if (user && typeof user.updateProfile === 'function') {
-          await user.updateProfile({
-            displayName: name,
-            photoURL: photoURL,
-          });
-        }
+        await signUp(email, password, name);
       } else {
         await signIn(email, password);
       }
@@ -107,14 +49,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     setLoading(true);
     setError("");
     try {
-      const userCredential = await signInWithGoogle();
-      const user = userCredential.user;
-      
-      // Check if user exists in Firestore, if not, save them
-      if (user) {
-        await saveUserToFirestore(user.uid, user.email || "", user.displayName || "", user.photoURL);
-      }
-      
+      await signInWithGoogle();
       onSuccess();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred";
@@ -185,49 +120,16 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {isSignUp && (
-                <>
-                  <div className="group relative">
-                    <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-500/50 transition-colors group-focus-within:text-emerald-400" />
-                    <input
-                      type="text"
-                      placeholder="Full Name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required
-                      className="w-full rounded-xl border border-emerald-500/30 bg-emerald-950/30 py-3 pl-12 pr-4 text-white placeholder:text-emerald-500/40 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
-                    />
-                  </div>
-
-                  <div className="flex flex-col items-center space-y-3">
-                    <div 
-                      className="relative cursor-pointer group"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <div className="h-24 w-24 rounded-full overflow-hidden border-2 border-emerald-500/50 bg-emerald-950/50 flex items-center justify-center">
-                        {profilePicturePreview ? (
-                          <img 
-                            src={profilePicturePreview} 
-                            alt="Profile preview" 
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <Camera className="h-8 w-8 text-emerald-400/60" />
-                        )}
-                      </div>
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Upload className="h-6 w-6 text-white" />
-                      </div>
-                    </div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleProfilePictureChange}
-                      className="hidden"
-                    />
-                    <p className="text-xs text-emerald-400/60">Click to upload profile picture (optional)</p>
-                  </div>
-                </>
+                <div className="group relative">
+                  <User className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-500/50 transition-colors group-focus-within:text-emerald-400" />
+                  <input
+                    type="text"
+                    placeholder="Full Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full rounded-xl border border-emerald-500/30 bg-emerald-950/30 py-3 pl-12 pr-4 text-white placeholder:text-emerald-500/40 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  />
+                </div>
               )}
 
               <div className="group relative">
