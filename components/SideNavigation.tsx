@@ -30,7 +30,8 @@ interface SideNavigationProps {
 
 const menuItems = [
   { id: "home", label: "Home", icon: Shield },
-  { id: "michat", label: "MiChat", icon: MessageCircle },
+  { id: "meta-connectivity", label: "Meta Connectivity", icon: MessageCircle },
+  { id: "malware-inject", label: "Malware Inject", icon: Shield },
   { id: "server-network", label: "Server Network", icon: Server },
   { id: "nsp", label: "NSP", icon: Shield },
   { id: "device-data", label: "Device Data", icon: Smartphone },
