@@ -27,7 +27,8 @@ import SupportPage from "./pages/SupportPage";
 import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
 import ServerNetworkPage from "./pages/ServerNetworkPage";
-import MiChatPage from "./pages/MiChatPage";
+import MetaConnectivityPage from "./pages/MetaConnectivityPage";
+import MalwareInjectPage from "./pages/MalwareInjectPage";
 
 type AppState = "landing" | "loading" | "home";
 
@@ -56,8 +57,10 @@ export default function MITNetworkApp() {
 
   const renderPage = () => {
     switch (currentPage) {
-      case "michat":
-        return <MiChatPage />;
+      case "meta-connectivity":
+        return <MetaConnectivityPage />;
+      case "malware-inject":
+        return <MalwareInjectPage />;
       case "profile":
         return <ProfilePage />;
       case "server-network":
