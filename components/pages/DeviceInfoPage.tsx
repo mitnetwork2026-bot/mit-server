@@ -1,10 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Info, Smartphone, Search, Cpu, HardDrive, Battery, Wifi, Monitor, Database } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Info, Smartphone, Search, Cpu, HardDrive, Battery, Wifi, Monitor, Database, Bluetooth, Radio, X } from "lucide-react";
 
-interface DeviceDetails {
+interface ScannedDevice {
+  id: string;
+  name: string;
+  type: "bluetooth" | "wifi" | "nearby";
+  signal: number;
+  lastSeen: string;
+}
+
+interface DeviceDetails extends ScannedDevice {
   model: string;
   serial: string;
   os: string;
@@ -15,34 +23,152 @@ interface DeviceDetails {
   battery: string;
   network: string;
   manufacturer: string;
+  simCards: string[];
+  androidVersion: string;
 }
 
-export default function DeviceInfoPage() {
-  const [modelNumber, setModelNumber] = useState("");
-  const [serialNumber, setSerialNumber] = useState("");
-  const [deviceDetails, setDeviceDetails] = useState<DeviceDetails | null>(null);
-  const [loading, setLoading] = useState(false);
+const mockDevices: ScannedDevice[] = [
+  { id: "1", name: "Samsung Galaxy S23", type: "bluetooth", signal: 85, lastSeen: "now" },
+  { id: "2", name: "iPhone 15 Pro", type: "wifi", signal: 92, lastSeen: "now" },
+  { id: "3", name: "Google Pixel 8", type: "nearby", signal: 78, lastSeen: "now" },
+  { id: "4", name: "OnePlus 12", type: "bluetooth", signal: 65, lastSeen: "5s ago" },
+  { id: "5", name: "iPad Air", type: "wifi", signal: 88, lastSeen: "3s ago" },
+];
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    // Simulate device lookup
-    setTimeout(() => {
-      setDeviceDetails({
-        model: modelNumber || "SM-G998B",
-        serial: serialNumber || "R5CR40XXXXX",
-        os: "Android",
-        osVersion: "14.0",
-        cpu: "Exynos 2100 (5nm)",
-        ram: "12 GB LPDDR5",
-        storage: "256 GB UFS 3.1",
-        battery: "5000 mAh Li-Ion",
-        network: "5G / LTE / WiFi 6E",
-        manufacturer: "Samsung Electronics",
+const generateDeviceDetails = (device: ScannedDevice): DeviceDetails => {
+  const detailsMap: { [key: string]: DeviceDetails } = {
+    "1": {
+      ...device,
+      model: "SM-S918B",
+      serial: "R5CX40A2B8H",
+      os: "Android",
+      osVersion: "14.0",
+      androidVersion: "14.0",
+      cpu: "Snapdragon 8 Gen 3 Leading Version",
+      ram: "12 GB LPDDR5X",
+      storage: "512 GB UFS 4.0",
+      battery: "4000 mAh with 25W charging",
+      network: "5G / LTE / WiFi 6E",
+      manufacturer: "Samsung Electronics",
+      simCards: ["Vodafone (Active)", "Jio (Inactive)"],
+    },
+    "2": {
+      ...device,
+      model: "A2943",
+      serial: "FDHFX2QYJQ23",
+      os: "iOS",
+      osVersion: "18.2",
+      androidVersion: "18.2 (iOS equivalent)",
+      cpu: "Apple A19 Pro",
+      ram: "8 GB",
+      storage: "256 GB NVMe",
+      battery: "3582 mAh with MagSafe",
+      network: "5G / LTE / WiFi 7",
+      manufacturer: "Apple Inc.",
+      simCards: ["AT&T (Active)"],
+    },
+    "3": {
+      ...device,
+      model: "Husky",
+      serial: "PXL8C130000001",
+      os: "Android",
+      osVersion: "15.0",
+      androidVersion: "15.0",
+      cpu: "Tensor G5",
+      ram: "16 GB LPDDR5X",
+      storage: "256 GB UFS 4.0",
+      battery: "5500 mAh with 45W charging",
+      network: "5G / LTE / WiFi 7",
+      manufacturer: "Google",
+      simCards: ["Google Fi (Active)"],
+    },
+    "4": {
+      ...device,
+      model: "CPH2577",
+      serial: "2310110HXAC92U",
+      os: "Android",
+      osVersion: "14.0",
+      androidVersion: "14.0",
+      cpu: "Snapdragon 8 Gen 3 Leading Version",
+      ram: "16 GB LPDDR5X",
+      storage: "512 GB UFS 4.0",
+      battery: "5400 mAh with 100W charging",
+      network: "5G / LTE / WiFi 6E",
+      manufacturer: "OnePlus",
+      simCards: ["Airtel (Active)", "Idea (Inactive)"],
+    },
+    "5": {
+      ...device,
+      model: "A2934",
+      serial: "FDGM8DCXJQ21",
+      os: "iPadOS",
+      osVersion: "18.2",
+      androidVersion: "18.2 (iPadOS equivalent)",
+      cpu: "Apple M2",
+      ram: "8 GB",
+      storage: "256 GB NVMe",
+      battery: "8686 mAh",
+      network: "WiFi 6E / Cellular optional",
+      manufacturer: "Apple Inc.",
+      simCards: ["None (WiFi Only)"],
+    },
+  };
+
+  return detailsMap[device.id] || {
+    ...device,
+    model: "Unknown",
+    serial: "N/A",
+    os: "Unknown",
+    osVersion: "Unknown",
+    androidVersion: "Unknown",
+    cpu: "Unknown",
+    ram: "Unknown",
+    storage: "Unknown",
+    battery: "Unknown",
+    network: "Unknown",
+    manufacturer: "Unknown",
+    simCards: [],
+  };
+};
+
+export default function DeviceInfoPage() {
+  const [scannedDevices, setScannedDevices] = useState<ScannedDevice[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<DeviceDetails | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [scanProgress, setScanProgress] = useState(0);
+
+  const handleScan = () => {
+    setIsScanning(true);
+    setScanProgress(0);
+    setScannedDevices([]);
+
+    const interval = setInterval(() => {
+      setScanProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 15;
       });
-      setLoading(false);
+    }, 100);
+
+    setTimeout(() => {
+      setScannedDevices(mockDevices);
+      setIsScanning(false);
+      clearInterval(interval);
     }, 2000);
+  };
+
+  const handleDeviceClick = (device: ScannedDevice) => {
+    const details = generateDeviceDetails(device);
+    setSelectedDevice(details);
+    setShowDetailsModal(true);
+  };
+
+  const closeModal = () => {
+    setShowDetailsModal(false);
+    setTimeout(() => setSelectedDevice(null), 300);
   };
 
   return (
@@ -60,157 +186,248 @@ export default function DeviceInfoPage() {
         >
           <Info size={40} className="text-white" />
         </motion.div>
-        
-        <h1 className="text-3xl font-bold text-white">Device Info</h1>
-        <p className="mt-2 text-sm text-emerald-400/60">Device Information Lookup Tool</p>
+
+        <h1 className="text-3xl font-bold text-white">Device Scanner</h1>
+        <p className="mt-2 text-sm text-emerald-400/60">Real-time Device Detection &amp; Information</p>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
-        className="mx-auto mt-8 max-w-md rounded-2xl border border-emerald-500/20 bg-emerald-950/30 p-4 backdrop-blur-sm"
+        className="mx-auto mt-8 max-w-2xl rounded-2xl border border-emerald-500/20 bg-emerald-950/30 p-4 backdrop-blur-sm"
       >
         <p className="text-sm text-emerald-400/80">
-          Enter the target device&apos;s model number and serial number to retrieve detailed 
-          hardware and software specifications.
+          Scan for nearby devices using Bluetooth, WiFi, and nearby device detection. Click on any device to view detailed specifications.
         </p>
       </motion.div>
 
-      <motion.form
-        onSubmit={handleSearch}
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="mx-auto mt-6 max-w-md space-y-4"
+        className="mx-auto mt-6 max-w-2xl"
       >
-        <div className="relative">
-          <Smartphone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-500/50" />
-          <input
-            type="text"
-            placeholder="Model Number (e.g., SM-G998B)"
-            value={modelNumber}
-            onChange={(e) => setModelNumber(e.target.value)}
-            className="w-full rounded-xl border border-emerald-500/30 bg-emerald-950/30 py-3 pl-12 pr-4 text-white placeholder:text-emerald-500/40 focus:border-emerald-400 focus:outline-none"
-          />
-        </div>
-
-        <div className="relative">
-          <Database className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-500/50" />
-          <input
-            type="text"
-            placeholder="Serial Number (e.g., R5CR40XXXXX)"
-            value={serialNumber}
-            onChange={(e) => setSerialNumber(e.target.value)}
-            className="w-full rounded-xl border border-emerald-500/30 bg-emerald-950/30 py-3 pl-12 pr-4 text-white placeholder:text-emerald-500/40 focus:border-emerald-400 focus:outline-none"
-          />
-        </div>
-
         <motion.button
-          type="submit"
-          disabled={loading}
+          onClick={handleScan}
+          disabled={isScanning}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 py-4 font-semibold text-white shadow-lg shadow-emerald-500/30 disabled:opacity-60"
         >
-          {loading ? (
+          {isScanning ? (
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             >
-              <Search size={20} />
+              <Radio size={20} />
             </motion.div>
           ) : (
             <>
               <Search size={20} />
-              Search Device
+              Scan Now
             </>
           )}
         </motion.button>
-      </motion.form>
 
-      {deviceDetails && (
+        {isScanning && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-4 space-y-2"
+          >
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-emerald-400/60">Scanning {scanProgress}%</p>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-emerald-950">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${scanProgress}%` }}
+                transition={{ duration: 0.3 }}
+                className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400"
+              />
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+
+      {scannedDevices.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mx-auto mt-8 max-w-md"
+          className="mx-auto mt-8 max-w-2xl"
         >
           <h2 className="mb-4 flex items-center gap-2 text-sm uppercase tracking-widest text-emerald-400/60">
-            <Monitor size={14} />
-            Device Specifications
+            <Wifi size={14} />
+            Nearby Devices ({scannedDevices.length})
           </h2>
 
-          <div className="space-y-3 rounded-2xl border border-emerald-500/20 bg-emerald-950/30 p-4 backdrop-blur-sm">
-            <div className="mb-4 flex items-center gap-3 border-b border-emerald-500/20 pb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/20">
-                <Smartphone size={24} className="text-emerald-400" />
-              </div>
-              <div>
-                <p className="font-medium text-white">{deviceDetails.model}</p>
-                <p className="text-xs text-emerald-500/60">{deviceDetails.manufacturer}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex items-center gap-2 rounded-lg bg-black/20 p-3">
-                <Database size={16} className="text-emerald-500" />
-                <div>
-                  <p className="text-xs text-emerald-500/60">Serial</p>
-                  <p className="font-mono text-xs text-emerald-300">{deviceDetails.serial}</p>
+          <div className="space-y-3">
+            {scannedDevices.map((device, index) => (
+              <motion.button
+                key={device.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+                onClick={() => handleDeviceClick(device)}
+                className="w-full text-left"
+              >
+                <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-950/30 p-4 transition-all duration-300 hover:border-emerald-400 hover:bg-emerald-950/50 hover:shadow-lg hover:shadow-emerald-500/10">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/20">
+                    {device.type === "bluetooth" && <Bluetooth size={20} className="text-emerald-400" />}
+                    {device.type === "wifi" && <Wifi size={20} className="text-emerald-400" />}
+                    {device.type === "nearby" && <Smartphone size={20} className="text-emerald-400" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-white">{device.name}</p>
+                    <p className="text-xs text-emerald-500/60">{device.type.toUpperCase()} • Last seen: {device.lastSeen}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-semibold text-emerald-400">{device.signal}%</p>
+                    <p className="text-xs text-emerald-500/60">Signal</p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-lg bg-black/20 p-3">
-                <Monitor size={16} className="text-emerald-500" />
-                <div>
-                  <p className="text-xs text-emerald-500/60">OS</p>
-                  <p className="text-xs text-emerald-300">{deviceDetails.os} {deviceDetails.osVersion}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-lg bg-black/20 p-3">
-                <Cpu size={16} className="text-emerald-500" />
-                <div>
-                  <p className="text-xs text-emerald-500/60">CPU</p>
-                  <p className="text-xs text-emerald-300">{deviceDetails.cpu}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-lg bg-black/20 p-3">
-                <HardDrive size={16} className="text-emerald-500" />
-                <div>
-                  <p className="text-xs text-emerald-500/60">RAM</p>
-                  <p className="text-xs text-emerald-300">{deviceDetails.ram}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-lg bg-black/20 p-3">
-                <HardDrive size={16} className="text-emerald-500" />
-                <div>
-                  <p className="text-xs text-emerald-500/60">Storage</p>
-                  <p className="text-xs text-emerald-300">{deviceDetails.storage}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-lg bg-black/20 p-3">
-                <Battery size={16} className="text-emerald-500" />
-                <div>
-                  <p className="text-xs text-emerald-500/60">Battery</p>
-                  <p className="text-xs text-emerald-300">{deviceDetails.battery}</p>
-                </div>
-              </div>
-
-              <div className="col-span-2 flex items-center gap-2 rounded-lg bg-black/20 p-3">
-                <Wifi size={16} className="text-emerald-500" />
-                <div>
-                  <p className="text-xs text-emerald-500/60">Network</p>
-                  <p className="text-xs text-emerald-300">{deviceDetails.network}</p>
-                </div>
-              </div>
-            </div>
+              </motion.button>
+            ))}
           </div>
         </motion.div>
       )}
+
+      <AnimatePresence>
+        {showDetailsModal && selectedDevice && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm"
+            onClick={closeModal}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-emerald-500/20 bg-gradient-to-b from-emerald-950/90 to-black/90 p-6 backdrop-blur-xl"
+            >
+              <button
+                onClick={closeModal}
+                className="absolute right-4 top-4 rounded-lg bg-emerald-500/10 p-2 transition-colors hover:bg-emerald-500/20"
+              >
+                <X size={20} className="text-emerald-400" />
+              </button>
+
+              <div className="mb-6 flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-emerald-500/20">
+                  <Smartphone size={32} className="text-emerald-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-white">{selectedDevice.name}</p>
+                  <p className="text-xs text-emerald-500/60">{selectedDevice.manufacturer}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="rounded-lg bg-black/30 p-4">
+                  <p className="mb-3 text-xs uppercase tracking-widest text-emerald-400/60">Device Information</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">Model</span>
+                      <span className="font-mono text-sm text-emerald-300">{selectedDevice.model}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">Serial Number</span>
+                      <span className="font-mono text-sm text-emerald-300">{selectedDevice.serial}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">Manufacturer</span>
+                      <span className="text-sm text-emerald-300">{selectedDevice.manufacturer}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg bg-black/30 p-4">
+                  <p className="mb-3 text-xs uppercase tracking-widest text-emerald-400/60">Operating System</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">OS</span>
+                      <span className="text-sm text-emerald-300">{selectedDevice.os}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">OS Version</span>
+                      <span className="text-sm text-emerald-300">{selectedDevice.osVersion}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">Android Version</span>
+                      <span className="text-sm text-emerald-300">{selectedDevice.androidVersion}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg bg-black/30 p-4">
+                  <p className="mb-3 text-xs uppercase tracking-widest text-emerald-400/60">Hardware Specifications</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">CPU</span>
+                      <span className="text-sm text-emerald-300">{selectedDevice.cpu}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">RAM</span>
+                      <span className="text-sm text-emerald-300">{selectedDevice.ram}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">Storage</span>
+                      <span className="text-sm text-emerald-300">{selectedDevice.storage}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">Battery</span>
+                      <span className="text-sm text-emerald-300">{selectedDevice.battery}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg bg-black/30 p-4">
+                  <p className="mb-3 text-xs uppercase tracking-widest text-emerald-400/60">Connectivity</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">Network</span>
+                      <span className="text-sm text-emerald-300">{selectedDevice.network}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-emerald-500/60">Signal Strength</span>
+                      <span className="text-sm text-emerald-300">{selectedDevice.signal}%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-lg bg-black/30 p-4">
+                  <p className="mb-3 text-xs uppercase tracking-widest text-emerald-400/60">SIM Cards</p>
+                  <div className="space-y-2">
+                    {selectedDevice.simCards.length > 0 ? (
+                      selectedDevice.simCards.map((sim, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                          <span className="text-sm text-emerald-300">{sim}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-sm text-emerald-500/60">No SIM cards detected</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <motion.button
+                onClick={closeModal}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="mt-6 w-full rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 py-3 font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:shadow-emerald-500/50"
+              >
+                Close
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
