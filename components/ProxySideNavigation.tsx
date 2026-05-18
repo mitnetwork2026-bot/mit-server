@@ -57,10 +57,10 @@ export default function ProxySideNavigation({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed bottom-0 right-0 top-0 z-50 w-72 border-l border-blue-700/30 bg-gradient-to-b from-blue-950/85 via-blue-900/80 to-blue-950/85 backdrop-blur-lg sm:w-80"
+            className="fixed bottom-0 right-0 top-0 z-50 w-72 border-l border-blue-900/40 bg-gradient-to-b from-slate-950/95 via-blue-950/92 to-slate-900/95 backdrop-blur-md sm:w-80"
           >
             <div className="flex h-full flex-col">
-              <div className="flex items-center justify-between border-b border-blue-600/20 bg-gradient-to-r from-blue-800/30 to-blue-900/30 p-3 sm:p-4">
+              <div className="flex items-center justify-between border-b border-blue-800/30 bg-gradient-to-r from-slate-950/40 to-blue-950/40 p-3 sm:p-4">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <motion.div
                     className="relative flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-600 p-1 sm:h-14 sm:w-14"
@@ -113,8 +113,8 @@ export default function ProxySideNavigation({
                       whileTap={{ scale: 0.98 }}
                       className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-left transition-all sm:gap-3 sm:px-4 sm:py-3 ${
                         currentPage === item.id
-                          ? "border border-blue-400/50 bg-gradient-to-r from-blue-600/25 to-cyan-600/15 text-blue-200"
-                          : "text-blue-300/70 hover:bg-blue-600/15 hover:text-blue-200"
+                          ? "border border-blue-500/40 bg-gradient-to-r from-blue-700/20 to-cyan-700/15 text-blue-100"
+                          : "text-blue-400/60 hover:bg-blue-700/15 hover:text-blue-200"
                       }`}
                     >
                       <item.icon size={18} className={`${item.color} sm:h-5 sm:w-5`} />
@@ -124,12 +124,12 @@ export default function ProxySideNavigation({
                 </div>
               </div>
 
-              <div className="space-y-2 border-t border-blue-600/20 bg-gradient-to-r from-blue-800/30 to-blue-900/30 p-3 sm:p-4">
+              <div className="space-y-2 border-t border-blue-800/30 bg-gradient-to-r from-slate-950/40 to-blue-950/40 p-3 sm:p-4">
                 <motion.button
                   onClick={onExit}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-600/40 to-blue-500/30 py-2.5 text-sm font-medium text-blue-100 transition-colors hover:from-blue-600/60 hover:to-blue-500/50 sm:py-3"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-blue-700/25 to-blue-600/20 py-2.5 text-sm font-medium text-blue-100 transition-colors hover:from-blue-700/40 hover:to-blue-600/35 sm:py-3"
                 >
                   <ArrowLeft size={18} className="sm:h-5 sm:w-5" />
                   Exit Proxy
