@@ -17,7 +17,7 @@ export default function ProxyBackground({ children }: { children: React.ReactNod
           alt="Proxy Background"
           className="h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/30 via-blue-950/15 to-slate-900/30 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950/15 via-blue-950/8 to-slate-900/15" />
       </motion.div>
 
       <div className="relative z-10">{children}</div>
