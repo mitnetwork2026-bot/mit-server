@@ -26,6 +26,7 @@ interface SideNavigationProps {
   onClose: () => void;
   currentPage: string;
   onNavigate: (page: string) => void;
+  onProxyClick?: () => void;
 }
 
 const menuItems = [
@@ -53,6 +54,7 @@ export default function SideNavigation({
   onClose,
   currentPage,
   onNavigate,
+  onProxyClick,
 }: SideNavigationProps) {
   const { logout, user } = useAuth();
 
@@ -130,7 +132,21 @@ export default function SideNavigation({
                 </div>
               </div>
 
-              <div className="border-t border-emerald-500/20 p-3 sm:p-4">
+              <div className="space-y-2 border-t border-emerald-500/20 p-3 sm:p-4">
+                {onProxyClick && (
+                  <motion.button
+                    onClick={() => {
+                      onProxyClick();
+                      onClose();
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600/30 py-2.5 text-sm font-medium text-emerald-400 transition-colors hover:bg-emerald-600/50 sm:py-3"
+                  >
+                    <Globe size={18} className="sm:h-5 sm:w-5" />
+                    Go to Proxy Site
+                  </motion.button>
+                )}
                 <motion.button
                   onClick={handleLogout}
                   whileHover={{ scale: 1.02 }}
