@@ -9,6 +9,7 @@ import LoadingScreen from "./LoadingScreen";
 import GlassHeader from "./GlassHeader";
 import GlassFooter from "./GlassFooter";
 import SideNavigation from "./SideNavigation";
+import ProxySideNavigation from "./ProxySideNavigation";
 import NotificationPanel from "./NotificationPanel";
 import HomePage from "./pages/HomePage";
 import NSPPage from "./pages/NSPPage";
@@ -29,8 +30,18 @@ import ProfilePage from "./pages/ProfilePage";
 import ServerNetworkPage from "./pages/ServerNetworkPage";
 import MetaConnectivityPage from "./pages/MetaConnectivityPage";
 import MalwareInjectPage from "./pages/MalwareInjectPage";
+import ProxySiteAuthPage from "./pages/ProxySiteAuthPage";
+import ProxySiteHomePage from "./pages/ProxySiteHomePage";
+import ProxyCServerPage from "./pages/ProxyCServerPage";
+import ProxyDataAnalysisPage from "./pages/ProxyDataAnalysisPage";
+import ProxyMonitorPage from "./pages/ProxyMonitorPage";
+import ProxyStoragePage from "./pages/ProxyStoragePage";
+import ProxyCPUMonitorPage from "./pages/ProxyCPUMonitorPage";
+import ProxyNetworkMapPage from "./pages/ProxyNetworkMapPage";
+import ProxySecurityPage from "./pages/ProxySecurityPage";
+import ProxySettingsPage from "./pages/ProxySettingsPage";
 
-type AppState = "landing" | "loading" | "home";
+type AppState = "landing" | "loading" | "home" | "proxy-auth" | "proxy-loading" | "proxy-home";
 
 export default function MITNetworkApp() {
   const [appState, setAppState] = useState<AppState>("landing");
@@ -38,6 +49,10 @@ export default function MITNetworkApp() {
   const [currentPage, setCurrentPage] = useState("home");
   const [isSideNavOpen, setIsSideNavOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isProxySideNavOpen, setIsProxySideNavOpen] = useState(false);
+  const [proxyCurrentPage, setProxyCurrentPage] = useState("proxy-home");
+  const [proxyUserEmail, setProxyUserEmail] = useState("");
+  const [showProxyAuthModal, setShowProxyAuthModal] = useState(false);
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -53,6 +68,26 @@ export default function MITNetworkApp() {
 
   const handleLoadingComplete = () => {
     setAppState("home");
+  };
+
+  const handleProxyAuthSuccess = (email: string) => {
+    setProxyUserEmail(email);
+    setShowProxyAuthModal(false);
+    setAppState("proxy-loading");
+    setTimeout(() => {
+      setAppState("proxy-home");
+    }, 2000);
+  };
+
+  const handleProxyNavigate = (page: string) => {
+    setProxyCurrentPage(page);
+    setIsProxySideNavOpen(false);
+  };
+
+  const handleExitProxy = () => {
+    setAppState("home");
+    setProxyCurrentPage("proxy-home");
+    setProxyUserEmail("");
   };
 
   const renderPage = () => {
@@ -95,6 +130,29 @@ export default function MITNetworkApp() {
         return <AboutPage />;
       default:
         return <HomePage onNavigate={setCurrentPage} />;
+    }
+  };
+
+  const renderProxyPage = () => {
+    switch (proxyCurrentPage) {
+      case "c-server":
+        return <ProxyCServerPage />;
+      case "data-analysis":
+        return <ProxyDataAnalysisPage />;
+      case "monitor":
+        return <ProxyMonitorPage />;
+      case "storage":
+        return <ProxyStoragePage />;
+      case "cpu-monitor":
+        return <ProxyCPUMonitorPage />;
+      case "network-map":
+        return <ProxyNetworkMapPage />;
+      case "security":
+        return <ProxySecurityPage />;
+      case "settings":
+        return <ProxySettingsPage />;
+      default:
+        return <ProxySiteHomePage onNavigate={handleProxyNavigate} userEmail={proxyUserEmail} />;
     }
   };
 
@@ -224,6 +282,58 @@ export default function MITNetworkApp() {
           <LoadingScreen key="loading" onComplete={handleLoadingComplete} />
         )}
 
+        {appState === "proxy-auth" && (
+          <motion.div 
+            key="proxy-auth" 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }}
+            className="relative z-10"
+          >
+            <ProxySiteAuthPage onAuthSuccess={handleProxyAuthSuccess} />
+          </motion.div>
+        )}
+
+        {appState === "proxy-loading" && (
+          <motion.div
+            key="proxy-loading"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="relative z-10 flex min-h-screen flex-col items-center justify-center bg-black"
+          >
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="h-16 w-16 rounded-full border-4 border-emerald-500/30 border-t-emerald-500"
+            />
+            <p className="mt-6 text-emerald-400">Initializing Proxy Site...</p>
+          </motion.div>
+        )}
+
+        {appState === "proxy-home" && (
+          <motion.div
+            key="proxy-home"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="relative z-10"
+          >
+            <GlassHeader 
+              onMenuClick={() => setIsProxySideNavOpen(true)} 
+              onNotificationClick={() => {}}
+              onProfileClick={() => {}}
+            />
+            {renderProxyPage()}
+            <GlassFooter />
+            <ProxySideNavigation
+              isOpen={isProxySideNavOpen}
+              onClose={() => setIsProxySideNavOpen(false)}
+              currentPage={proxyCurrentPage}
+              onNavigate={handleProxyNavigate}
+              onExit={handleExitProxy}
+            />
+          </motion.div>
+        )}
+
         {appState === "home" && (
           <motion.div
             key="home"
@@ -243,6 +353,7 @@ export default function MITNetworkApp() {
               onClose={() => setIsSideNavOpen(false)}
               currentPage={currentPage}
               onNavigate={setCurrentPage}
+              onProxyClick={() => setAppState("proxy-auth")}
             />
             <NotificationPanel
               isOpen={isNotificationOpen}
