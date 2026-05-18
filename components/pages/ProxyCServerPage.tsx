@@ -1,236 +1,261 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Server, Terminal, Code, Play, Square, RotateCcw, X, Zap } from "lucide-react";
+import { Server, Zap } from "lucide-react";
 import ProxyBackground from "../ProxyBackground";
 
+type ConnectionPhase = "idle" | "connecting" | "connected" | "cycling";
+type CyclingPhase = "coding" | "thinking" | "analyzing" | "checking";
+
+const CYCLING_PHASES: { phase: CyclingPhase; label: string; duration: number }[] = [
+  { phase: "coding", label: "Coding", duration: 20 },
+  { phase: "thinking", label: "AI Thinking", duration: 5 },
+  { phase: "analyzing", label: "Analyzing", duration: 15 },
+  { phase: "checking", label: "Checking", duration: 12 },
+];
+
+const CodeBlocks = () => (
+  <div className="font-mono text-xs space-y-2 text-blue-400">
+    {[...Array(8)].map((_, i) => (
+      <motion.div
+        key={i}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0.5] }}
+        transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.1 }}
+        className="flex items-center gap-2"
+      >
+        <span className="text-blue-600">{">"}</span>
+        <span className="inline-block">
+          {`const server = new MIT.Proxy(${Math.random().toString(16).slice(2, 8)});`}
+        </span>
+      </motion.div>
+    ))}
+  </div>
+);
+
+const ThinkingAnimation = () => (
+  <div className="flex items-center justify-center h-40">
+    <div className="flex items-center gap-3">
+      <motion.div
+        animate={{ rotate: 360 }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="w-8 h-8 border-3 border-blue-400/30 border-t-blue-400 rounded-full"
+      />
+      <div className="flex flex-col gap-3">
+        {["AI", "Thinking"].map((text, i) => (
+          <motion.div
+            key={i}
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
+            className="text-lg font-bold text-blue-400"
+          >
+            {text}
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
 export default function ProxyCServerPage() {
-  const [isRunning, setIsRunning] = useState(false);
-  const [output, setOutput] = useState<string[]>([]);
-  const [connectedOptions, setConnectedOptions] = useState<number[]>([]);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectionPhase, setConnectionPhase] = useState<ConnectionPhase>("idle");
+  const [currentCycleIndex, setCurrentCycleIndex] = useState(0);
+  const [isConnected, setIsConnected] = useState(false);
 
-  const connectivity_options = [
-    { id: 1, name: "VPN Gateway 1", region: "US-East", ping: "12ms" },
-    { id: 2, name: "VPN Gateway 2", region: "US-West", ping: "45ms" },
-    { id: 3, name: "VPN Gateway 3", region: "Europe", ping: "78ms" },
-    { id: 4, name: "VPN Gateway 4", region: "Asia", ping: "98ms" },
-    { id: 5, name: "VPN Gateway 5", region: "AU-Sydney", ping: "125ms" },
-    { id: 6, name: "Proxy Node 1", region: "US-East", ping: "8ms" },
-    { id: 7, name: "Proxy Node 2", region: "US-West", ping: "38ms" },
-    { id: 8, name: "Proxy Node 3", region: "Europe", ping: "65ms" },
-    { id: 9, name: "Proxy Node 4", region: "Asia", ping: "92ms" },
-    { id: 10, name: "Proxy Node 5", region: "AU-Sydney", ping: "120ms" },
-  ];
+  const currentCyclingPhase = CYCLING_PHASES[currentCycleIndex];
 
-  const handleExecute = () => {
-    setIsRunning(true);
-    setOutput([
-      "> C Server Web Interface v2.0",
-      "> Initializing server connection...",
-      "> Loading proxy modules...",
-      "[✓] Network initialized",
-      "[✓] Firewall configured",
-      "[✓] Server ready for requests",
-      "> Waiting for commands...",
-    ]);
-    setTimeout(() => setIsRunning(false), 2000);
-  };
+  useEffect(() => {
+    if (connectionPhase !== "cycling") return;
 
-  const handleConnect = (id: number) => {
-    setIsConnecting(true);
-    setOutput([]);
+    const timer = setTimeout(() => {
+      setCurrentCycleIndex((prev) => (prev + 1) % CYCLING_PHASES.length);
+    }, currentCyclingPhase.duration * 1000);
+
+    return () => clearTimeout(timer);
+  }, [connectionPhase, currentCycleIndex, currentCyclingPhase.duration]);
+
+  const handleConnect = () => {
+    setConnectionPhase("connecting");
     setTimeout(() => {
-      setConnectedOptions([...connectedOptions, id]);
-      const option = connectivity_options.find(o => o.id === id);
-      setOutput([
-        `> Connecting to ${option?.name}...`,
-        `> Establishing VPN tunnel to ${option?.region}...`,
-        "[✓] Encryption handshake successful",
-        "[✓] Authentication verified",
-        `[✓] Connected to ${option?.name}`,
-        `> Latency: ${option?.ping}`,
-        "> VPN Status: CONNECTED",
-      ]);
-      setIsConnecting(false);
-    }, 1500);
+      setConnectionPhase("connected");
+      setIsConnected(true);
+    }, 2000);
+    setTimeout(() => {
+      setConnectionPhase("cycling");
+      setCurrentCycleIndex(0);
+    }, 3000);
   };
 
-  const handleDeleteOption = (id: number) => {
-    setConnectedOptions(connectedOptions.filter(c => c !== id));
+  const handleReset = () => {
+    setConnectionPhase("idle");
+    setIsConnected(false);
+    setCurrentCycleIndex(0);
   };
 
   return (
     <ProxyBackground>
-      <div className="min-h-screen px-4 pb-32 pt-28">
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center"
-      >
+      <div className="min-h-screen px-4 pb-24 pt-20">
+        {/* Header */}
         <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mx-auto mb-3 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg shadow-blue-500/20"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
         >
-          <Server size={28} className="text-white sm:h-8 sm:w-8" />
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-teal-700 shadow-xl shadow-blue-400/30"
+          >
+            <Server size={40} className="text-white" />
+          </motion.div>
+          <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">MIT Main Server</h1>
+          <p className="text-sm text-blue-400/60">Next Generation Proxy Network</p>
         </motion.div>
 
-        <h1 className="text-2xl sm:text-3xl font-bold text-blue-100">C Server Web</h1>
-        <p className="mt-1.5 text-xs sm:text-sm text-blue-300/60">Command Server Interface</p>
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="mx-auto mt-8 max-w-4xl space-y-4"
-      >
-        {/* Connectivity Options */}
-        <div className="rounded-lg border border-blue-500/25 bg-blue-950/25 p-3 sm:p-4 backdrop-blur-xl">
-          <h2 className="mb-3 flex items-center gap-1.5 text-sm sm:text-base font-semibold text-blue-100">
-            <Zap size={16} className="text-blue-400 sm:h-5 sm:w-5" />
-            Available VPN Gateways
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-            {connectivity_options.map((option) => (
-              <motion.div
-                key={option.id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: option.id * 0.05 }}
-                className="relative group"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mx-auto max-w-2xl"
+        >
+          {/* Connect Button Section */}
+          {connectionPhase === "idle" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-8"
+            >
+              <motion.button
+                onClick={handleConnect}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full py-6 rounded-xl bg-gradient-to-r from-blue-600 to-teal-600 text-white font-bold text-lg shadow-2xl shadow-blue-600/50 hover:shadow-blue-600/70 transition-shadow"
               >
-                <motion.button
-                  onClick={() => handleConnect(option.id)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  disabled={connectedOptions.includes(option.id) || isConnecting}
-                  className={`w-full rounded-lg p-2.5 sm:p-3 text-center text-xs sm:text-sm font-semibold transition-all border ${
-                    connectedOptions.includes(option.id)
-                      ? "bg-green-600/25 border-green-500/50 text-green-400"
-                      : "bg-blue-600/25 border-blue-500/50 text-blue-400 hover:bg-blue-600/40"
-                  } disabled:opacity-50`}
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  className="inline-block mr-3"
                 >
-                  <div className="truncate">{option.name}</div>
-                  <div className="text-xs opacity-60 mt-1">{option.ping}</div>
-                </motion.button>
-                {connectedOptions.includes(option.id) && (
-                  <motion.button
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0 }}
-                    onClick={() => handleDeleteOption(option.id)}
-                    className="absolute -top-2 -right-2 bg-red-600 rounded-full p-1 hover:bg-red-700 shadow-lg"
-                  >
-                    <X size={12} className="text-white" />
-                  </motion.button>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      
-        {/* Control Panel */}
-        <div className="rounded-lg border border-blue-500/25 bg-blue-950/25 p-3 sm:p-4 backdrop-blur-xl">
-          <h2 className="mb-2.5 flex items-center gap-1.5 text-sm sm:text-base font-semibold text-blue-100">
-            <Terminal size={16} className="text-blue-400 sm:h-5 sm:w-5" />
-            Server Controls
-          </h2>
-
-          <div className="flex gap-2 sm:gap-3">
-            <motion.button
-              onClick={handleExecute}
-              disabled={isRunning}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white disabled:opacity-50"
-            >
-              {isRunning ? (
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity }}>
-                  <Play size={14} className="sm:h-4 sm:w-4" />
+                  <Zap size={24} />
                 </motion.div>
-              ) : (
-                <Play size={14} className="sm:h-4 sm:w-4" />
-              )}
-              <span className="hidden sm:inline">{isRunning ? "Running..." : "Start Server"}</span>
-              <span className="sm:hidden">{isRunning ? "Run..." : "Start"}</span>
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="flex items-center justify-center gap-1 rounded-lg bg-red-600/25 px-2.5 py-2 sm:py-2.5 text-xs text-red-400 transition-colors hover:bg-red-600/40"
-            >
-              <Square size={14} className="sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Stop</span>
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setOutput([])}
-              className="flex items-center justify-center gap-1 rounded-lg bg-blue-600/25 px-2.5 py-2 sm:py-2.5 text-xs text-blue-400 transition-colors hover:bg-blue-600/40"
-            >
-              <RotateCcw size={14} className="sm:h-4 sm:w-4" />
-              <span className="hidden sm:inline">Clear</span>
-            </motion.button>
-          </div>
-        </div>
+                Connect to MIT Main Server
+              </motion.button>
+            </motion.div>
+          )}
 
-        {/* Terminal Output */}
-        <div className="rounded-lg border border-blue-500/25 bg-blue-950/30 p-3 sm:p-4 font-mono text-xs sm:text-sm backdrop-blur-xl">
-          <div className="mb-2.5 flex items-center gap-1.5">
-            <Code size={16} className="text-blue-400 sm:h-5 sm:w-5" />
-            <h3 className="font-semibold text-white">VPN Connection Logs</h3>
-          </div>
-
-          <div className="h-64 overflow-y-auto rounded-lg border border-blue-400/10 bg-black/30 p-4">
-            {output.length === 0 ? (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-blue-400/40">Connect to a gateway to view VPN logs.</p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {output.map((line, index) => (
+          {/* Connecting Animation */}
+          {connectionPhase === "connecting" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-8 p-8 rounded-xl border border-blue-400/30 bg-blue-950/30 backdrop-blur-xl"
+            >
+              <div className="flex flex-col items-center gap-4">
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    opacity: [1, 0.5, 1],
+                  }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-600 to-teal-600 flex items-center justify-center"
+                >
                   <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="text-blue-400"
-                  >
-                    <span className="text-blue-600">{">>"}</span> {line}
-                  </motion.div>
-                ))}
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="w-12 h-12 rounded-full border-3 border-blue-400/30 border-t-blue-400"
+                  />
+                </motion.div>
+                <motion.h2
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                  className="text-xl font-bold text-blue-400"
+                >
+                  Connecting to Server...
+                </motion.h2>
               </div>
-            )}
-          </div>
-        </div>
+            </motion.div>
+          )}
 
-        {/* Info Panel */}
-        <div className="rounded-2xl border border-blue-400/20 bg-black/30 p-6 backdrop-blur-xl">
-          <h3 className="mb-3 font-semibold text-white">Server Configuration</h3>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-lg bg-blue-400/10 p-3">
-              <p className="text-xs text-blue-400/60">Port</p>
-              <p className="font-mono text-white">8080</p>
-            </div>
-            <div className="rounded-lg bg-blue-400/10 p-3">
-              <p className="text-xs text-blue-400/60">Protocol</p>
-              <p className="font-mono text-white">HTTP/HTTPS</p>
-            </div>
-            <div className="rounded-lg bg-blue-400/10 p-3">
-              <p className="text-xs text-blue-400/60">Uptime</p>
-              <p className="font-mono text-white">Online</p>
-            </div>
-            <div className="rounded-lg bg-blue-400/10 p-3">
-              <p className="text-xs text-blue-400/60">Status</p>
-              <p className="font-mono text-blue-400">Active</p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+          {/* Connected Status */}
+          {connectionPhase === "connected" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-8 p-6 rounded-xl border border-green-400/30 bg-green-950/30 backdrop-blur-xl"
+            >
+              <div className="flex items-center justify-center gap-3">
+                <motion.div
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
+                  className="w-4 h-4 rounded-full bg-green-400"
+                />
+                <h2 className="text-lg font-bold text-green-400">Server Connected Successfully</h2>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Main Processing Box */}
+          {(connectionPhase === "connected" || connectionPhase === "cycling") && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-xl border border-blue-400/20 bg-blue-950/40 backdrop-blur-xl p-8 min-h-80"
+            >
+              {/* Phase Label */}
+              <motion.div
+                key={currentCyclingPhase?.phase}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="mb-6"
+              >
+                <div className="inline-block px-4 py-2 rounded-lg bg-blue-600/30 border border-blue-400/50">
+                  <p className="text-sm font-bold text-blue-400">
+                    {currentCyclingPhase?.label}
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Content based on phase */}
+              {currentCyclingPhase?.phase === "thinking" ? (
+                <ThinkingAnimation />
+              ) : (
+                <CodeBlocks />
+              )}
+
+              {/* Progress Indicator */}
+              <div className="mt-8">
+                <div className="w-full h-1 rounded-full bg-blue-900/50 overflow-hidden">
+                  <motion.div
+                    key={currentCycleIndex}
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{
+                      duration: currentCyclingPhase?.duration || 1,
+                      ease: "linear",
+                    }}
+                    className="h-full bg-gradient-to-r from-blue-600 to-teal-600"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Reset Button */}
+          {(connectionPhase === "connected" || connectionPhase === "cycling") && (
+            <motion.button
+              onClick={handleReset}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="w-full mt-6 py-3 rounded-lg bg-red-600/30 text-red-400 font-semibold hover:bg-red-600/50 transition-colors"
+            >
+              Disconnect
+            </motion.button>
+          )}
+        </motion.div>
       </div>
     </ProxyBackground>
   );
