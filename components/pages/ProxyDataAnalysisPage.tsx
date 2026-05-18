@@ -14,7 +14,7 @@ export default function ProxyDataAnalysisPage() {
 
   return (
     <ProxyBackground>
-      <div className="min-h-screen px-4 pb-32 pt-28">
+      <div className="min-h-screen px-4 pb-24 pt-20">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -24,12 +24,12 @@ export default function ProxyDataAnalysisPage() {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-teal-700 shadow-xl shadow-blue-400/30"
+          className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-teal-700 shadow-xl shadow-blue-400/30"
         >
           <BarChart3 size={40} className="text-white" />
         </motion.div>
 
-        <h1 className="text-3xl font-bold text-white">Data Analysis</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">Data Analysis</h1>
         <p className="mt-2 text-sm text-blue-400/60">Network Traffic Analytics</p>
       </motion.div>
 
@@ -40,18 +40,18 @@ export default function ProxyDataAnalysisPage() {
         className="mx-auto mt-8 max-w-3xl space-y-4"
       >
         {/* Stats Grid */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-2 sm:gap-3 sm:grid-cols-2">
           {stats.map((stat, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 + index * 0.05 }}
-              className="rounded-2xl border border-blue-400/20 bg-black/30 p-6 backdrop-blur-xl"
+              className="rounded-lg border border-blue-400/20 bg-blue-950/25 p-3 sm:p-4 backdrop-blur-xl"
             >
               <p className="text-sm text-blue-400/60">{stat.label}</p>
               <div className="mt-3 flex items-end justify-between">
-                <h3 className="text-3xl font-bold text-white">{stat.value}</h3>
+                <h3 className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</h3>
                 <div className="flex items-center gap-1 text-blue-400">
                   <TrendingUp size={16} />
                   <span className="text-xs">{stat.trend}</span>
@@ -62,7 +62,7 @@ export default function ProxyDataAnalysisPage() {
         </div>
 
         {/* Analysis Detail */}
-        <div className="rounded-2xl border border-blue-400/20 bg-black/30 p-6 backdrop-blur-xl">
+        <div className="rounded-lg border border-blue-400/20 bg-blue-950/25 p-3 sm:p-4 backdrop-blur-xl">
           <h3 className="mb-4 flex items-center gap-2 font-semibold text-white">
             <Zap size={20} className="text-blue-400" />
             Live Analysis
