@@ -2,12 +2,27 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Server, Terminal, Code, Play, Square, RotateCcw } from "lucide-react";
+import { Server, Terminal, Code, Play, Square, RotateCcw, X, Zap } from "lucide-react";
 import ProxyBackground from "../ProxyBackground";
 
 export default function ProxyCServerPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [output, setOutput] = useState<string[]>([]);
+  const [connectedOptions, setConnectedOptions] = useState<number[]>([]);
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const connectivity_options = [
+    { id: 1, name: "VPN Gateway 1", region: "US-East", ping: "12ms" },
+    { id: 2, name: "VPN Gateway 2", region: "US-West", ping: "45ms" },
+    { id: 3, name: "VPN Gateway 3", region: "Europe", ping: "78ms" },
+    { id: 4, name: "VPN Gateway 4", region: "Asia", ping: "98ms" },
+    { id: 5, name: "VPN Gateway 5", region: "AU-Sydney", ping: "125ms" },
+    { id: 6, name: "Proxy Node 1", region: "US-East", ping: "8ms" },
+    { id: 7, name: "Proxy Node 2", region: "US-West", ping: "38ms" },
+    { id: 8, name: "Proxy Node 3", region: "Europe", ping: "65ms" },
+    { id: 9, name: "Proxy Node 4", region: "Asia", ping: "92ms" },
+    { id: 10, name: "Proxy Node 5", region: "AU-Sydney", ping: "120ms" },
+  ];
 
   const handleExecute = () => {
     setIsRunning(true);
@@ -21,6 +36,29 @@ export default function ProxyCServerPage() {
       "> Waiting for commands...",
     ]);
     setTimeout(() => setIsRunning(false), 2000);
+  };
+
+  const handleConnect = (id: number) => {
+    setIsConnecting(true);
+    setOutput([]);
+    setTimeout(() => {
+      setConnectedOptions([...connectedOptions, id]);
+      const option = connectivity_options.find(o => o.id === id);
+      setOutput([
+        `> Connecting to ${option?.name}...`,
+        `> Establishing VPN tunnel to ${option?.region}...`,
+        "[✓] Encryption handshake successful",
+        "[✓] Authentication verified",
+        `[✓] Connected to ${option?.name}`,
+        `> Latency: ${option?.ping}`,
+        "> VPN Status: CONNECTED",
+      ]);
+      setIsConnecting(false);
+    }, 1500);
+  };
+
+  const handleDeleteOption = (id: number) => {
+    setConnectedOptions(connectedOptions.filter(c => c !== id));
   };
 
   return (
@@ -48,8 +86,53 @@ export default function ProxyCServerPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="mx-auto mt-8 max-w-3xl space-y-4"
+        className="mx-auto mt-8 max-w-4xl space-y-4"
       >
+        {/* Connectivity Options */}
+        <div className="rounded-lg border border-blue-500/25 bg-blue-950/25 p-3 sm:p-4 backdrop-blur-xl">
+          <h2 className="mb-3 flex items-center gap-1.5 text-sm sm:text-base font-semibold text-blue-100">
+            <Zap size={16} className="text-blue-400 sm:h-5 sm:w-5" />
+            Available VPN Gateways
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {connectivity_options.map((option) => (
+              <motion.div
+                key={option.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: option.id * 0.05 }}
+                className="relative group"
+              >
+                <motion.button
+                  onClick={() => handleConnect(option.id)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  disabled={connectedOptions.includes(option.id) || isConnecting}
+                  className={`w-full rounded-lg p-2.5 sm:p-3 text-center text-xs sm:text-sm font-semibold transition-all border ${
+                    connectedOptions.includes(option.id)
+                      ? "bg-green-600/25 border-green-500/50 text-green-400"
+                      : "bg-blue-600/25 border-blue-500/50 text-blue-400 hover:bg-blue-600/40"
+                  } disabled:opacity-50`}
+                >
+                  <div className="truncate">{option.name}</div>
+                  <div className="text-xs opacity-60 mt-1">{option.ping}</div>
+                </motion.button>
+                {connectedOptions.includes(option.id) && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0 }}
+                    onClick={() => handleDeleteOption(option.id)}
+                    className="absolute -top-2 -right-2 bg-red-600 rounded-full p-1 hover:bg-red-700 shadow-lg"
+                  >
+                    <X size={12} className="text-white" />
+                  </motion.button>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      
         {/* Control Panel */}
         <div className="rounded-lg border border-blue-500/25 bg-blue-950/25 p-3 sm:p-4 backdrop-blur-xl">
           <h2 className="mb-2.5 flex items-center gap-1.5 text-sm sm:text-base font-semibold text-blue-100">
@@ -99,13 +182,13 @@ export default function ProxyCServerPage() {
         <div className="rounded-lg border border-blue-500/25 bg-blue-950/30 p-3 sm:p-4 font-mono text-xs sm:text-sm backdrop-blur-xl">
           <div className="mb-2.5 flex items-center gap-1.5">
             <Code size={16} className="text-blue-400 sm:h-5 sm:w-5" />
-            <h3 className="font-semibold text-white">Server Output</h3>
+            <h3 className="font-semibold text-white">VPN Connection Logs</h3>
           </div>
 
           <div className="h-64 overflow-y-auto rounded-lg border border-blue-400/10 bg-black/30 p-4">
             {output.length === 0 ? (
               <div className="flex h-full items-center justify-center">
-                <p className="text-blue-400/40">No output yet. Start the server to see logs.</p>
+                <p className="text-blue-400/40">Connect to a gateway to view VPN logs.</p>
               </div>
             ) : (
               <div className="space-y-1">
