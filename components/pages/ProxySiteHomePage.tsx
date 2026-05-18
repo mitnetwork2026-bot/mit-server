@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Server, Database, Zap, Shield, Lock, Cpu, Globe, Settings } from "lucide-react";
+import { Server, Database, Zap, Shield, Lock, Cpu, Globe, Settings, Terminal, Wifi, BarChart3, Key, Activity, Code2, MoreVertical, HardDrive } from "lucide-react";
 import ProxyBackground from "../ProxyBackground";
 
 interface ProxySiteHomePageProps {
@@ -13,11 +13,17 @@ const proxyFeatures = [
   { id: "c-server", label: "C Server", icon: Server, description: "Command Server" },
   { id: "data-analysis", label: "Analysis", icon: Database, description: "Data Analytics" },
   { id: "monitor", label: "Monitor", icon: Zap, description: "System Monitor" },
-  { id: "storage", label: "Storage", icon: Lock, description: "Data Storage" },
+  { id: "storage", label: "Storage", icon: HardDrive, description: "Data Storage" },
   { id: "cpu-monitor", label: "CPU Monitor", icon: Cpu, description: "Processor Stats" },
   { id: "network-map", label: "Network Map", icon: Globe, description: "Network Topology" },
   { id: "security", label: "Security", icon: Shield, description: "Security Audit" },
   { id: "settings", label: "Settings", icon: Settings, description: "Configuration" },
+  { id: "terminal", label: "Terminal", icon: Terminal, description: "SSH Shell Access" },
+  { id: "proxy-stats", label: "Proxy Stats", icon: BarChart3, description: "Traffic Analytics" },
+  { id: "encryption", label: "Encryption", icon: Key, description: "Crypto Tools" },
+  { id: "api-tools", label: "API Tools", icon: Code2, description: "API Management" },
+  { id: "network-status", label: "Net Status", icon: Wifi, description: "Live Network" },
+  { id: "system-health", label: "Health", icon: Activity, description: "System Health" },
 ];
 
 export default function ProxySiteHomePage({ onNavigate, userEmail }: ProxySiteHomePageProps) {
@@ -75,7 +81,7 @@ export default function ProxySiteHomePage({ onNavigate, userEmail }: ProxySiteHo
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mx-auto mt-12 grid max-w-6xl gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="mx-auto mt-8 grid max-w-6xl gap-2 sm:gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
         >
           {proxyFeatures.map((feature, index) => (
             <motion.button
@@ -84,19 +90,19 @@ export default function ProxySiteHomePage({ onNavigate, userEmail }: ProxySiteHo
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 + index * 0.05 }}
-              whileHover={{ scale: 1.05, y: -5 }}
+              whileHover={{ scale: 1.08, y: -3 }}
               whileTap={{ scale: 0.95 }}
-              className="group relative overflow-hidden rounded-2xl border border-blue-400/30 bg-black/30 p-6 backdrop-blur-xl transition-all hover:border-blue-300/50 hover:bg-black/40 hover:shadow-lg hover:shadow-blue-400/20"
+              className="group relative overflow-hidden rounded-lg border border-blue-500/25 bg-blue-950/25 p-3 sm:p-4 backdrop-blur-xl transition-all hover:border-blue-400/40 hover:bg-blue-950/35 hover:shadow-lg hover:shadow-blue-500/15"
             >
               <div className="relative z-10">
                 <motion.div
-                  className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-teal-600"
-                  group-hover={{ scale: 1.1 }}
+                  className="mb-2 flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-500"
+                  whileHover={{ scale: 1.1 }}
                 >
-                  <feature.icon size={24} className="text-white" />
+                  <feature.icon size={18} className="text-white sm:h-5 sm:w-5" />
                 </motion.div>
-                <h3 className="text-left text-sm font-bold text-white">{feature.label}</h3>
-                <p className="mt-1 text-left text-xs text-blue-400/60">{feature.description}</p>
+                <h3 className="text-left text-xs sm:text-sm font-bold text-blue-100">{feature.label}</h3>
+                <p className="mt-0.5 text-left text-xs text-blue-400/50 hidden sm:block">{feature.description}</p>
               </div>
 
               <motion.div
@@ -114,36 +120,36 @@ export default function ProxySiteHomePage({ onNavigate, userEmail }: ProxySiteHo
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="mx-auto mt-12 max-w-2xl rounded-2xl border border-blue-400/30 bg-black/30 p-6 backdrop-blur-xl"
+          className="mx-auto mt-8 max-w-2xl rounded-lg border border-blue-500/25 bg-blue-950/25 p-4 sm:p-5 backdrop-blur-xl"
         >
-          <h2 className="text-lg font-bold text-white">System Status</h2>
-          <div className="mt-4 space-y-3">
+          <h2 className="text-sm sm:text-base font-bold text-blue-100">System Status</h2>
+          <div className="mt-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-blue-400/80">Network Connection</span>
-              <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm text-blue-300/80">Network</span>
+              <div className="flex items-center gap-1.5">
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 1, repeat: Infinity }}
-                  className="h-2 w-2 rounded-full bg-blue-400"
+                  className="h-1.5 w-1.5 rounded-full bg-blue-400"
                 />
-                <span className="text-xs text-blue-400">Connected</span>
+                <span className="text-xs text-blue-300">Connected</span>
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-blue-400/80">Proxy Status</span>
-              <div className="flex items-center gap-2">
+              <span className="text-xs sm:text-sm text-blue-300/80">Proxy</span>
+              <div className="flex items-center gap-1.5">
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ duration: 1.2, repeat: Infinity }}
-                  className="h-2 w-2 rounded-full bg-blue-400"
+                  className="h-1.5 w-1.5 rounded-full bg-blue-400"
                 />
-                <span className="text-xs text-blue-400">Active</span>
+                <span className="text-xs text-blue-300">Active</span>
               </div>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-blue-400/80">Security Level</span>
-              <span className="rounded-lg bg-blue-400/20 px-2 py-1 text-xs font-semibold text-blue-400">
-                MAXIMUM
+              <span className="text-xs sm:text-sm text-blue-300/80">Security</span>
+              <span className="rounded px-2 py-0.5 text-xs font-semibold text-blue-300 bg-blue-500/20">
+                MAX
               </span>
             </div>
           </div>
