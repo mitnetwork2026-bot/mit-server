@@ -14,17 +14,17 @@ export default function ProxyStoragePage() {
 
   return (
     <ProxyBackground>
-      <div className="min-h-screen px-4 pb-32 pt-28">
+      <div className="min-h-screen px-4 pb-24 pt-20">
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="text-center">
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-teal-700 shadow-xl shadow-blue-400/30"
+          className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-teal-700 shadow-xl shadow-blue-400/30"
         >
           <HardDrive size={40} className="text-white" />
         </motion.div>
-        <h1 className="text-3xl font-bold text-white">Storage</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">Storage</h1>
         <p className="mt-2 text-sm text-blue-400/60">Data Storage Management</p>
       </motion.div>
 
@@ -40,7 +40,7 @@ export default function ProxyStoragePage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 + i * 0.1 }}
-            className="rounded-xl border border-blue-400/20 bg-black/30 p-4 backdrop-blur-xl"
+            className="rounded-xl border border-blue-400/20 bg-blue-950/25 p-4 backdrop-blur-xl"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
