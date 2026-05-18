@@ -35,13 +35,13 @@ export default function ProxyCServerPage() {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-teal-700 shadow-xl shadow-blue-400/30"
+          className="mx-auto mb-3 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 shadow-lg shadow-blue-500/20"
         >
-          <Server size={40} className="text-white" />
+          <Server size={28} className="text-white sm:h-8 sm:w-8" />
         </motion.div>
 
-        <h1 className="text-3xl font-bold text-white">C Server Web</h1>
-        <p className="mt-2 text-sm text-blue-400/60">Command Server Interface</p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-blue-100">C Server Web</h1>
+        <p className="mt-1.5 text-xs sm:text-sm text-blue-300/60">Command Server Interface</p>
       </motion.div>
 
       <motion.div
@@ -51,53 +51,54 @@ export default function ProxyCServerPage() {
         className="mx-auto mt-8 max-w-3xl space-y-4"
       >
         {/* Control Panel */}
-        <div className="rounded-2xl border border-blue-400/20 bg-black/30 p-6 backdrop-blur-xl">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
-            <Terminal size={20} className="text-blue-400" />
+        <div className="rounded-lg border border-blue-500/25 bg-blue-950/25 p-3 sm:p-4 backdrop-blur-xl">
+          <h2 className="mb-2.5 flex items-center gap-1.5 text-sm sm:text-base font-semibold text-blue-100">
+            <Terminal size={16} className="text-blue-400 sm:h-5 sm:w-5" />
             Server Controls
           </h2>
 
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3">
             <motion.button
               onClick={handleExecute}
               disabled={isRunning}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 font-semibold text-white disabled:opacity-50"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-white disabled:opacity-50"
             >
               {isRunning ? (
                 <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity }}>
-                  <Play size={18} />
+                  <Play size={14} className="sm:h-4 sm:w-4" />
                 </motion.div>
               ) : (
-                <Play size={18} />
+                <Play size={14} className="sm:h-4 sm:w-4" />
               )}
-              {isRunning ? "Running..." : "Start Server"}
+              <span className="hidden sm:inline">{isRunning ? "Running..." : "Start Server"}</span>
+              <span className="sm:hidden">{isRunning ? "Run..." : "Start"}</span>
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex items-center justify-center gap-2 rounded-xl bg-red-600/30 px-4 py-3 text-red-400 transition-colors hover:bg-red-600/50"
+              className="flex items-center justify-center gap-1 rounded-lg bg-red-600/25 px-2.5 py-2 sm:py-2.5 text-xs text-red-400 transition-colors hover:bg-red-600/40"
             >
-              <Square size={18} />
-              Stop
+              <Square size={14} className="sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Stop</span>
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setOutput([])}
-              className="flex items-center justify-center gap-2 rounded-xl bg-blue-600/30 px-4 py-3 text-blue-400 transition-colors hover:bg-blue-600/50"
+              className="flex items-center justify-center gap-1 rounded-lg bg-blue-600/25 px-2.5 py-2 sm:py-2.5 text-xs text-blue-400 transition-colors hover:bg-blue-600/40"
             >
-              <RotateCcw size={18} />
-              Clear
+              <RotateCcw size={14} className="sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Clear</span>
             </motion.button>
           </div>
         </div>
 
         {/* Terminal Output */}
-        <div className="rounded-2xl border border-blue-400/20 bg-black/50 p-6 font-mono text-sm backdrop-blur-xl">
-          <div className="mb-4 flex items-center gap-2">
-            <Code size={20} className="text-blue-400" />
+        <div className="rounded-lg border border-blue-500/25 bg-blue-950/30 p-3 sm:p-4 font-mono text-xs sm:text-sm backdrop-blur-xl">
+          <div className="mb-2.5 flex items-center gap-1.5">
+            <Code size={16} className="text-blue-400 sm:h-5 sm:w-5" />
             <h3 className="font-semibold text-white">Server Output</h3>
           </div>
 
