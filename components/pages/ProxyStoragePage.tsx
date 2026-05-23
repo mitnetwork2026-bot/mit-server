@@ -84,6 +84,7 @@ export default function ProxyStoragePage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [pendingModel, setPendingModel] = useState<any>(null); // Store pending paid model selection
   
   // Upload State
   const [fileId, setFileId] = useState("");
@@ -99,35 +100,66 @@ export default function ProxyStoragePage() {
     const savedAnimation = localStorage.getItem("selectedAnimation");
     const savedAuth = localStorage.getItem("isAuthorized");
     const savedConnected = localStorage.getItem("isConnected");
+    const savedAuthModel = localStorage.getItem("authorizedModel");
+    
     if (savedAI && savedAnimation) {
-      setSelectedAIModel(savedAI);
-      setSelectedAnimation(savedAnimation);
+      // Only load if the model is free OR if it's the authorized model
+      const model = AI_MODELS.find(m => m.id === savedAI);
+      if (model?.tier === "free" || (savedAuth === "true" && savedAuthModel === savedAI)) {
+        setSelectedAIModel(savedAI);
+        setSelectedAnimation(savedAnimation);
+        if (savedAuth === "true") setIsAuthorized(true);
+      } else {
+        // Clear invalid saved data
+        localStorage.removeItem("selectedAIModel");
+        localStorage.removeItem("selectedAnimation");
+        localStorage.removeItem("isAuthorized");
+        localStorage.removeItem("authorizedModel");
+        localStorage.removeItem("isConnected");
+      }
     }
-    if (savedAuth === "true") setIsAuthorized(true);
-    if (savedConnected === "true") setIsConnected(true);
+    if (savedConnected === "true" && savedAuth === "true") setIsConnected(true);
   }, []);
   
   // Handle AI Model Selection
   const handleAISelect = (model: any) => {
-    // Save selection to localStorage
-    localStorage.setItem("selectedAIModel", model.id);
-    localStorage.setItem("selectedAnimation", model.animation);
-    
-    setSelectedAIModel(model.id);
-    setSelectedAnimation(model.animation);
-    
-    // Check if free tier
+    // If free tier, select immediately
     if (model.tier === "free") {
-      setIsAuthorized(true);
-      localStorage.setItem("isAuthorized", "true");
-      setShowAccessKeyPopup(false);
-    } else {
-      setSelectedPayModel(model);
-      setShowPayPopup(true);
+      // Clear any existing paid authorization
+      localStorage.removeItem("isAuthorized");
+      localStorage.removeItem("authorizedModel");
+      setIsAuthorized(false);
+      setIsConnected(false);
+      localStorage.removeItem("isConnected");
+      
+      setSelectedAIModel(model.id);
+      setSelectedAnimation(model.animation);
+      localStorage.setItem("selectedAIModel", model.id);
+      localStorage.setItem("selectedAnimation", model.animation);
+    } 
+    // If premium tier, check if already authorized for this specific model
+    else if (model.tier === "premium") {
+      const savedAuthModel = localStorage.getItem("authorizedModel");
+      const savedAuth = localStorage.getItem("isAuthorized");
+      
+      // If already authorized for this exact model, select it
+      if (savedAuth === "true" && savedAuthModel === model.id) {
+        setSelectedAIModel(model.id);
+        setSelectedAnimation(model.animation);
+        setIsAuthorized(true);
+        localStorage.setItem("selectedAIModel", model.id);
+        localStorage.setItem("selectedAnimation", model.animation);
+      } 
+      // Otherwise, start payment flow
+      else {
+        setPendingModel(model);
+        setSelectedPayModel(model);
+        setShowPayPopup(true);
+      }
     }
   };
   
-  // Handle Payment Confirmation
+  // Handle Payment Confirmation - opens access key popup
   const handlePaymentConfirm = () => {
     setShowPayPopup(false);
     setShowAccessKeyPopup(true);
@@ -140,22 +172,48 @@ export default function ProxyStoragePage() {
       setTimeout(() => {
         setIsAuthorizing(false);
         setIsAuthorized(true);
+        // Store which model was authorized
         localStorage.setItem("isAuthorized", "true");
+        localStorage.setItem("authorizedModel", selectedPayModel.id);
+        
+        // Now select the model
+        setSelectedAIModel(selectedPayModel.id);
+        setSelectedAnimation(selectedPayModel.animation);
+        localStorage.setItem("selectedAIModel", selectedPayModel.id);
+        localStorage.setItem("selectedAnimation", selectedPayModel.animation);
+        
         setShowAccessKeyPopup(false);
-        // Show success popup
-        alert("✅ Authorization Successful! You now have access to " + selectedPayModel?.name);
+        setPendingModel(null);
+        
+        // Show success message
+        const successDiv = document.createElement("div");
+        successDiv.className = "fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-gradient-to-r from-green-600 to-teal-600 text-white px-6 py-3 rounded-xl shadow-2xl font-semibold animate-bounce-in";
+        successDiv.innerText = `✅ ${selectedPayModel.name} Activated Successfully!`;
+        document.body.appendChild(successDiv);
+        setTimeout(() => successDiv.remove(), 3000);
       }, 2000);
     } else {
-      alert("Invalid Access Key! Please enter the correct key.");
+      const errorDiv = document.createElement("div");
+      errorDiv.className = "fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-gradient-to-r from-red-600 to-rose-600 text-white px-6 py-3 rounded-xl shadow-2xl font-semibold";
+      errorDiv.innerText = `❌ Invalid Access Key! Please enter the correct key.`;
+      document.body.appendChild(errorDiv);
+      setTimeout(() => errorDiv.remove(), 3000);
     }
   };
   
   // Handle Connect
   const handleConnect = () => {
-    if (!isAuthorized) {
-      alert("Please select and authorize an AI model first!");
+    if (!selectedAIModel) {
+      alert("Please select an AI model first!");
       return;
     }
+    
+    const model = AI_MODELS.find(m => m.id === selectedAIModel);
+    if (model?.tier === "premium" && !isAuthorized) {
+      alert("Please complete payment and authorization for this AI model first!");
+      return;
+    }
+    
     setIsConnecting(true);
     setTimeout(() => {
       setIsConnecting(false);
@@ -228,6 +286,23 @@ export default function ProxyStoragePage() {
     }
   };
   
+  // Check if a model is selectable (free OR paid & authorized)
+  const isModelSelectable = (model: any) => {
+    if (model.tier === "free") return true;
+    const savedAuthModel = localStorage.getItem("authorizedModel");
+    const savedAuth = localStorage.getItem("isAuthorized");
+    return savedAuth === "true" && savedAuthModel === model.id;
+  };
+  
+  // Get model status text
+  const getModelStatus = (model: any) => {
+    if (model.tier === "free") return "Free";
+    const savedAuthModel = localStorage.getItem("authorizedModel");
+    const savedAuth = localStorage.getItem("isAuthorized");
+    if (savedAuth === "true" && savedAuthModel === model.id) return "✓ Active";
+    return `$${model.price}`;
+  };
+  
   return (
     <ProxyBackground>
       <div className="min-h-screen px-4 pb-24 pt-20">
@@ -285,37 +360,49 @@ export default function ProxyStoragePage() {
               <h3 className="font-semibold text-white">AI Intelligence Model</h3>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
-              {AI_MODELS.map((model, i) => (
-                <motion.button
-                  key={model.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + i * 0.05 }}
-                  onClick={() => handleAISelect(model)}
-                  className={`relative rounded-lg border p-3 text-center transition-all duration-300 ${
-                    selectedAIModel === model.id
-                      ? `${getTierAnimation(model.animation)} border-transparent ring-2 scale-105`
-                      : "border-blue-400/20 bg-blue-600/20 hover:bg-blue-600/30 hover:scale-102"
-                  }`}
-                >
-                  {model.tier === "free" && (
-                    <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-green-500 text-white">FREE</span>
-                  )}
-                  <div className="text-center">
-                    <div className="text-lg mb-1">
-                      {model.id === "michat-2.5-mini" && <Sparkles size={20} className="mx-auto text-amber-400" />}
-                      {model.id === "michat-nano" && <Zap size={20} className="mx-auto text-gray-300" />}
-                      {model.id === "michat-3.0-pro" && <Shield size={20} className="mx-auto text-orange-400" />}
-                      {model.id === "michat-max" && <Crown size={20} className="mx-auto text-purple-400" />}
-                      {model.id === "michat-3.5-ultra" && <Diamond size={20} className="mx-auto text-yellow-400" />}
-                    </div>
-                    <p className="text-xs font-semibold text-white truncate">{model.name}</p>
-                    {model.tier === "premium" && (
-                      <p className="text-[10px] text-blue-400/60 mt-1">${model.price}</p>
+              {AI_MODELS.map((model, i) => {
+                const isSelectable = isModelSelectable(model);
+                const isActive = selectedAIModel === model.id;
+                
+                return (
+                  <motion.button
+                    key={model.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 + i * 0.05 }}
+                    onClick={() => handleAISelect(model)}
+                    disabled={model.tier === "premium" && !isSelectable && selectedAIModel !== model.id}
+                    className={`relative rounded-lg border p-3 text-center transition-all duration-300 ${
+                      isActive
+                        ? `${getTierAnimation(model.animation)} border-transparent ring-2 scale-105`
+                        : !isSelectable && model.tier === "premium"
+                        ? "border-red-400/20 bg-red-600/10 opacity-60 cursor-not-allowed"
+                        : "border-blue-400/20 bg-blue-600/20 hover:bg-blue-600/30 hover:scale-102"
+                    }`}
+                  >
+                    {model.tier === "free" && (
+                      <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-green-500 text-white">FREE</span>
                     )}
-                  </div>
-                </motion.button>
-              ))}
+                    {model.tier === "premium" && isSelectable && (
+                      <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-teal-500 text-white">ACTIVE</span>
+                    )}
+                    {model.tier === "premium" && !isSelectable && selectedAIModel !== model.id && (
+                      <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-gray-500 text-white">LOCKED</span>
+                    )}
+                    <div className="text-center">
+                      <div className="text-lg mb-1">
+                        {model.id === "michat-2.5-mini" && <Sparkles size={20} className="mx-auto text-amber-400" />}
+                        {model.id === "michat-nano" && <Zap size={20} className="mx-auto text-gray-300" />}
+                        {model.id === "michat-3.0-pro" && <Shield size={20} className="mx-auto text-orange-400" />}
+                        {model.id === "michat-max" && <Crown size={20} className="mx-auto text-purple-400" />}
+                        {model.id === "michat-3.5-ultra" && <Diamond size={20} className="mx-auto text-yellow-400" />}
+                      </div>
+                      <p className="text-xs font-semibold text-white truncate">{model.name}</p>
+                      <p className="text-[10px] text-blue-400/60 mt-1">{getModelStatus(model)}</p>
+                    </div>
+                  </motion.button>
+                );
+              })}
             </div>
             
             {/* Selected Model Display */}
@@ -327,7 +414,8 @@ export default function ProxyStoragePage() {
               >
                 <p className="text-xs text-white/80">
                   Active AI Model: <span className="font-bold">{AI_MODELS.find(m => m.id === selectedAIModel)?.name}</span>
-                  {isAuthorized && <CheckCircle size={14} className="inline ml-2 text-green-400" />}
+                  {isAuthorized && selectedAIModel !== "michat-2.5-mini" && <CheckCircle size={14} className="inline ml-2 text-green-400" />}
+                  {selectedAIModel === "michat-2.5-mini" && <Sparkles size={14} className="inline ml-2 text-amber-400" />}
                 </p>
               </motion.div>
             )}
@@ -341,12 +429,14 @@ export default function ProxyStoragePage() {
           >
             <button
               onClick={handleConnect}
-              disabled={!isAuthorized || isConnecting || isConnected}
+              disabled={!selectedAIModel || isConnecting || isConnected || (selectedAIModel !== "michat-2.5-mini" && !isAuthorized)}
               className={`w-full py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
                 isConnected
                   ? "bg-green-600/50 cursor-default text-green-300"
-                  : !isAuthorized
+                  : !selectedAIModel
                   ? "bg-gray-600/50 cursor-not-allowed text-gray-400"
+                  : (selectedAIModel !== "michat-2.5-mini" && !isAuthorized)
+                  ? "bg-red-600/50 cursor-not-allowed text-red-300"
                   : "bg-gradient-to-r from-blue-600 to-teal-600 hover:shadow-lg hover:shadow-blue-500/50 text-white"
               }`}
             >
@@ -375,6 +465,11 @@ export default function ProxyStoragePage() {
                   transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                 />
               </div>
+            )}
+            {selectedAIModel && selectedAIModel !== "michat-2.5-mini" && !isAuthorized && (
+              <p className="text-xs text-red-400 text-center mt-2">
+                ⚠️ Please complete payment & authorization for this AI model first
+              </p>
             )}
           </motion.div>
           
@@ -560,7 +655,7 @@ export default function ProxyStoragePage() {
               </div>
               
               <div className="space-y-2 mb-4">
-                <p className="text-sm font-semibold text-white/80">✨ What you get:</p>
+                <p className="text-sm font-semibold text-white/80">✨ Premium Features:</p>
                 {selectedPayModel.features.map((feature: string, idx: number) => (
                   <div key={idx} className="flex items-center gap-2 text-xs text-white/70">
                     <CheckCircle size={12} className="text-green-400" />
@@ -577,7 +672,10 @@ export default function ProxyStoragePage() {
               </button>
               
               <button
-                onClick={() => setShowPayPopup(false)}
+                onClick={() => {
+                  setShowPayPopup(false);
+                  setPendingModel(null);
+                }}
                 className="w-full mt-2 py-2 rounded-lg text-white/60 hover:text-white/80 text-sm"
               >
                 Cancel
@@ -607,7 +705,7 @@ export default function ProxyStoragePage() {
               <div className="text-center mb-4">
                 <Key size={40} className="mx-auto text-blue-400 mb-2" />
                 <h3 className="text-xl font-bold text-white">Enter Access Key</h3>
-                <p className="text-sm text-blue-400/60 mt-1">Please provide your unique access key to continue</p>
+                <p className="text-sm text-blue-400/60 mt-1">Please provide your unique access key to activate {selectedPayModel?.name}</p>
               </div>
               
               <input
@@ -641,7 +739,10 @@ export default function ProxyStoragePage() {
               )}
               
               <button
-                onClick={() => setShowAccessKeyPopup(false)}
+                onClick={() => {
+                  setShowAccessKeyPopup(false);
+                  setAccessKey("");
+                }}
                 className="w-full mt-2 py-2 rounded-lg text-white/60 hover:text-white/80 text-sm"
               >
                 Cancel
@@ -655,6 +756,14 @@ export default function ProxyStoragePage() {
         @keyframes pulse-glow {
           0%, 100% { box-shadow: 0 0 10px rgba(249, 115, 22, 0.5); }
           50% { box-shadow: 0 0 20px rgba(249, 115, 22, 0.8); }
+        }
+        @keyframes bounce-in {
+          0% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+          60% { transform: translateX(-50%) scale(1.05); }
+          100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+        .animate-bounce-in {
+          animation: bounce-in 0.5s ease-out;
         }
         .animate-pulse-glow {
           animation: pulse-glow 1.5s infinite;
