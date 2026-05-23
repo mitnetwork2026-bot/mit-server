@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Globe, Search, ExternalLink, Shield, Lock, Clock, AlertTriangle, X, RotateCcw, CheckCircle, Loader2, Eye, FileText, Database, Zap, RefreshCw, Terminal } from "lucide-react";
+import { Globe, Search, ExternalLink, Shield, Lock, Clock, AlertTriangle, X, RotateCcw, CheckCircle, Loader2, Eye, Terminal } from "lucide-react";
 
 const mirrorSites = [
   { id: 1, name: "Mirror Node Alpha", url: "alpha.mirror.net", status: "active", latency: "23ms" },
@@ -25,16 +25,7 @@ const isPostImageUrl = (url: string): boolean => {
 // Extract image ID or path from postimage URL for preview
 const extractPostImagePreview = (url: string): string | null => {
   try {
-    // Pattern for postimage direct links
-    if (url.includes('/i/') || url.includes('postimg.cc')) {
-      // For URLs like https://i.postimg.cc/xxx/image.jpg
-      if (url.includes('postimg.cc')) {
-        return url;
-      }
-      // For gallery URLs, try to get the actual image
-      if (url.includes('/gallery/')) {
-        return null;
-      }
+    if (url.includes('postimg.cc')) {
       return url;
     }
     return null;
@@ -43,32 +34,12 @@ const extractPostImagePreview = (url: string): string | null => {
   }
 };
 
-// Simulate log messages
-const logMessages = [
-  "Initializing secure connection...",
-  "Authenticating with mirror nodes...",
-  "Establishing encrypted tunnel...",
-  "Fetching remote content...",
-  "Verifying SSL certificates...",
-  "Caching static assets...",
-  "Compressing data stream...",
-  "Distributing to edge nodes...",
-  "Validating integrity hashes...",
-  "Building mirror structure...",
-  "Syncing with CDN...",
-  "Optimizing delivery paths...",
-  "Finalizing mirror deployment...",
-  "Successfully mirrored all content",
-  "Complete - Mirror is now live"
-];
-
 const scanningSteps = ["SCANNING", "MIRRORING", "ANALYZING", "ASSEMBLING", "SEARCHING", "FOUND DATA"];
 
 export default function MirrorWebPage() {
   const [searchUrl, setSearchUrl] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [currentStepText, setCurrentStepText] = useState("READY");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
@@ -76,6 +47,7 @@ export default function MirrorWebPage() {
   const [showRetryButton, setShowRetryButton] = useState(false);
   const [slideShowText, setSlideShowText] = useState("");
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const scanContainerRef = useRef<HTMLDivElement>(null);
 
   // Slideshow text animation
   useEffect(() => {
@@ -95,17 +67,16 @@ export default function MirrorWebPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-scroll logs
+  // Auto-scroll logs only when new logs are added (but prevent page jump)
   useEffect(() => {
-    if (logsEndRef.current) {
-      logsEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (logsEndRef.current && logs.length > 0) {
+      logsEndRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [logs]);
 
   const resetScan = () => {
     setIsScanning(false);
     setProgress(0);
-    setCurrentStepIndex(0);
     setCurrentStepText("READY");
     setPreviewImage(null);
     setLogs([]);
@@ -119,15 +90,15 @@ export default function MirrorWebPage() {
   };
 
   const runScanningSteps = async (isValidPostImage: boolean, url: string) => {
-    // Step 1: 0% to 5% for validation
+    // Step 1: 0% to 5% for validation (2 seconds)
     setProgress(0);
     setCurrentStepText("VALIDATING");
     addLog("[✓] Starting mirror process...");
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 400));
     
     for (let i = 1; i <= 5; i++) {
       setProgress(i);
-      await new Promise(resolve => setTimeout(resolve, 80));
+      await new Promise(resolve => setTimeout(resolve, 120));
     }
     
     if (!isValidPostImage) {
@@ -148,51 +119,61 @@ export default function MirrorWebPage() {
     addLog("[✓] URL validation passed");
     addLog("[✓] PostImage domain recognized");
     
-    // Steps: SCANNING, MIRRORING, ANALYZING, ASSEMBLING, SEARCHING, FOUND DATA
+    // Total duration 50 seconds for 6 steps (each step ~8.3 seconds)
+    const stepDuration = 8300; // milliseconds per step
+    const progressPerStep = 15; // 5% to 95% is 90%, divided by 6 steps = 15% per step
+    
     for (let stepIdx = 0; stepIdx < scanningSteps.length; stepIdx++) {
       setCurrentStepText(scanningSteps[stepIdx]);
       addLog(`[→] ${scanningSteps[stepIdx]}...`);
       
-      // Calculate progress for this step (5% to 95%)
-      const startProgress = 5 + (stepIdx * 15);
-      const endProgress = 5 + ((stepIdx + 1) * 15);
-      
-      for (let p = startProgress; p <= endProgress; p++) {
-        setProgress(p);
-        await new Promise(resolve => setTimeout(resolve, 30));
-      }
-      
       // Special animations for certain steps
       if (scanningSteps[stepIdx] === "ANALYZING") {
+        await new Promise(resolve => setTimeout(resolve, 800));
         addLog("[→] Checking content structure...");
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 600));
         addLog("[→] Verifying image integrity...");
       }
       if (scanningSteps[stepIdx] === "ASSEMBLING") {
+        await new Promise(resolve => setTimeout(resolve, 800));
         addLog("[→] Gathering mirrored fragments...");
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 600));
         addLog("[→] Building cache layers...");
       }
       if (scanningSteps[stepIdx] === "SEARCHING") {
+        await new Promise(resolve => setTimeout(resolve, 800));
         addLog("[→] Locating optimized delivery path...");
       }
       if (scanningSteps[stepIdx] === "FOUND DATA") {
+        await new Promise(resolve => setTimeout(resolve, 600));
         addLog("[✓] Data located successfully!");
+        await new Promise(resolve => setTimeout(resolve, 500));
         addLog("[✓] Mirror manifest created");
       }
       
-      await new Promise(resolve => setTimeout(resolve, 150));
+      // Calculate start and end progress for this step
+      const startProgress = 5 + (stepIdx * progressPerStep);
+      const endProgress = 5 + ((stepIdx + 1) * progressPerStep);
+      const totalStepsForProgress = 30; // number of increments per step
+      const incrementDelay = stepDuration / totalStepsForProgress;
+      
+      for (let p = startProgress; p <= endProgress; p++) {
+        setProgress(p);
+        await new Promise(resolve => setTimeout(resolve, incrementDelay));
+      }
     }
     
-    // 99% then 100%
+    // 99% then 100% (remaining 4 seconds)
     setProgress(99);
     setCurrentStepText("FINALIZING");
     addLog("[→] Finalizing mirror assembly...");
-    await new Promise(resolve => setTimeout(resolve, 400));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     addLog("[→] Applying security patches...");
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 800));
     addLog("[→] Syncing with all mirror nodes...");
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    addLog("[→] Verifying checksums...");
+    await new Promise(resolve => setTimeout(resolve, 800));
     
     setProgress(100);
     setCurrentStepText("COMPLETE");
@@ -225,7 +206,6 @@ export default function MirrorWebPage() {
     
     setIsScanning(true);
     setProgress(0);
-    setCurrentStepIndex(0);
     setPreviewImage(null);
     setLogs([]);
     setShowRetryButton(false);
@@ -238,7 +218,6 @@ export default function MirrorWebPage() {
 
   const handleRetry = () => {
     resetScan();
-    // Focus on search input after retry
     const inputElement = document.querySelector('input[type="url"]') as HTMLInputElement;
     if (inputElement) inputElement.focus();
   };
@@ -306,12 +285,8 @@ export default function MirrorWebPage() {
         </p>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mx-auto mt-6 max-w-md"
-      >
+      {/* Main Scan Section - Stable position */}
+      <div ref={scanContainerRef} className="mx-auto mt-6 max-w-md">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-emerald-500/50" />
@@ -344,121 +319,122 @@ export default function MirrorWebPage() {
         >
           {slideShowText}
         </motion.div>
-      </motion.div>
 
-      {/* Progress Bar with Unique Animation */}
-      {(isScanning || progress > 0) && (
-        <motion.div
-          initial={{ opacity: 0, scaleY: 0 }}
-          animate={{ opacity: 1, scaleY: 1 }}
-          className="mx-auto mt-6 max-w-md"
-        >
-          <div className="mb-2 flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              {progress < 100 ? (
-                <Loader2 size={14} className="animate-spin text-emerald-400" />
-              ) : (
-                <CheckCircle size={14} className="text-emerald-400" />
-              )}
-              <span className="font-mono text-emerald-400/80">{currentStepText}</span>
-            </div>
-            <span className="font-mono text-emerald-400/60">{progress}%</span>
-          </div>
-          <div className="relative h-3 overflow-hidden rounded-full bg-emerald-950/50">
-            <motion.div
-              className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ type: "spring", stiffness: 100, damping: 20 }}
-            />
-            <motion.div
-              className="absolute left-0 top-0 h-full w-20 rounded-full bg-white/20 blur-sm"
-              animate={{ x: ["-100%", "400%"] }}
-              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-            />
-          </div>
-        </motion.div>
-      )}
-
-      {/* Preview Image Section */}
-      <AnimatePresence>
-        {previewImage && (
+        {/* Progress Bar with Unique Animation */}
+        {(isScanning || progress > 0) && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="mx-auto mt-6 max-w-md overflow-hidden rounded-2xl border border-emerald-500/20 bg-emerald-950/30 p-3 backdrop-blur-sm"
+            initial={{ opacity: 0, scaleY: 0 }}
+            animate={{ opacity: 1, scaleY: 1 }}
+            className="mt-6"
           >
-            <p className="mb-2 flex items-center gap-2 text-xs text-emerald-400/60">
-              <Eye size={12} />
-              Mirrored Preview
-            </p>
-            <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-emerald-950/50">
-              <img
-                src={previewImage}
-                alt="Mirrored preview"
-                className="h-full w-full object-contain"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x200?text=Preview+Not+Available";
-                }}
+            <div className="mb-2 flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                {progress < 100 ? (
+                  <Loader2 size={14} className="animate-spin text-emerald-400" />
+                ) : (
+                  <CheckCircle size={14} className="text-emerald-400" />
+                )}
+                <span className="font-mono text-emerald-400/80">{currentStepText}</span>
+              </div>
+              <span className="font-mono text-emerald-400/60">{progress}%</span>
+            </div>
+            <div className="relative h-3 overflow-hidden rounded-full bg-emerald-950/50">
+              <motion.div
+                className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-emerald-500 to-emerald-300"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+              />
+              <motion.div
+                className="absolute left-0 top-0 h-full w-20 rounded-full bg-white/20 blur-sm"
+                animate={{ x: ["-100%", "400%"] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
               />
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
 
-      {/* Logs Section */}
-      <AnimatePresence>
-        {(logs.length > 0 || showRetryButton) && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="mx-auto mt-6 max-w-md"
-          >
-            <div className="rounded-2xl border border-emerald-500/20 bg-emerald-950/40 p-4 backdrop-blur-sm">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs text-emerald-400/60">
-                  <Terminal size={12} />
-                  <span>Mirror Logs</span>
+        {/* Preview Image Section */}
+        <AnimatePresence>
+          {previewImage && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="mt-6 overflow-hidden rounded-2xl border border-emerald-500/20 bg-emerald-950/30 p-3 backdrop-blur-sm"
+            >
+              <p className="mb-2 flex items-center gap-2 text-xs text-emerald-400/60">
+                <Eye size={12} />
+                Mirrored Preview
+              </p>
+              <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-emerald-950/50">
+                <img
+                  src={previewImage}
+                  alt="Mirrored preview"
+                  className="h-full w-full object-contain"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x200?text=Preview+Not+Available";
+                  }}
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Logs Section */}
+        <AnimatePresence>
+          {(logs.length > 0 || showRetryButton) && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              className="mt-6"
+            >
+              <div className="rounded-2xl border border-emerald-500/20 bg-emerald-950/40 p-4 backdrop-blur-sm">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-emerald-400/60">
+                    <Terminal size={12} />
+                    <span>Mirror Logs</span>
+                  </div>
+                  {logs.length > 0 && (
+                    <span className="text-[10px] text-emerald-500/40">{logs.length} entries</span>
+                  )}
                 </div>
-                {logs.length > 0 && (
-                  <span className="text-[10px] text-emerald-500/40">{logs.length} entries</span>
+                <div className="max-h-64 overflow-y-auto font-mono text-xs">
+                  {logs.map((log, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.02 }}
+                      className="py-1 text-emerald-400/70"
+                    >
+                      {log}
+                    </motion.div>
+                  ))}
+                  <div ref={logsEndRef} />
+                </div>
+                
+                {showRetryButton && (
+                  <motion.button
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleRetry}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-950/50 py-2 text-sm text-emerald-400 transition hover:bg-emerald-900/50"
+                  >
+                    <RotateCcw size={14} />
+                    Retry Mirror
+                  </motion.button>
                 )}
               </div>
-              <div className="max-h-64 overflow-y-auto font-mono text-xs">
-                {logs.map((log, idx) => (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.02 }}
-                    className="py-1 text-emerald-400/70"
-                  >
-                    {log}
-                  </motion.div>
-                ))}
-                <div ref={logsEndRef} />
-              </div>
-              
-              {showRetryButton && (
-                <motion.button
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleRetry}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-950/50 py-2 text-sm text-emerald-400 transition hover:bg-emerald-900/50"
-                >
-                  <RotateCcw size={14} />
-                  Retry Mirror
-                </motion.button>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
+      {/* Mirror Nodes Section */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -511,6 +487,7 @@ export default function MirrorWebPage() {
         </div>
       </motion.div>
 
+      {/* Security Features Section */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
