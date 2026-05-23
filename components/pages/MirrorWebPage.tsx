@@ -12,6 +12,7 @@ const mirrorSites = [
   { id: 5, name: "Mirror Node Epsilon", url: "epsilon.mirror.net", status: "active", latency: "34ms" },
 ];
 
+
 // Helper to check if URL is from postimage.org or postimg.cc
 const isPostImageUrl = (url: string): boolean => {
   try {
