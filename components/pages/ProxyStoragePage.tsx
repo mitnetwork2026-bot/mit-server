@@ -73,9 +73,9 @@ export default function ProxyStoragePage() {
     CLOUD_PROVIDERS.sort(() => Math.random() - 0.5).slice(0, 20 + Math.floor(Math.random() * 5))
   );
   
-  // AI Selection State
-  const [selectedAIModel, setSelectedAIModel] = useState<string | null>(null);
-  const [selectedAnimation, setSelectedAnimation] = useState<string | null>(null);
+  // AI Selection State - Default to free tier
+  const [selectedAIModel, setSelectedAIModel] = useState<string>("michat-2.5-mini");
+  const [selectedAnimation, setSelectedAnimation] = useState<string>("bronze");
   const [showPayPopup, setShowPayPopup] = useState(false);
   const [selectedPayModel, setSelectedPayModel] = useState<any>(null);
   const [showAccessKeyPopup, setShowAccessKeyPopup] = useState(false);
@@ -84,7 +84,7 @@ export default function ProxyStoragePage() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [pendingModel, setPendingModel] = useState<any>(null); // Store pending paid model selection
+  const [authorizedModelId, setAuthorizedModelId] = useState<string | null>(null);
   
   // Upload State
   const [fileId, setFileId] = useState("");
@@ -94,65 +94,61 @@ export default function ProxyStoragePage() {
   const [uploadHistory, setUploadHistory] = useState<UploadHistoryItem[]>([]);
   const [showFileIdError, setShowFileIdError] = useState(false);
   
-  // Load selected AI from localStorage on mount
+  // Load saved state from localStorage on mount
   useEffect(() => {
-    const savedAI = localStorage.getItem("selectedAIModel");
-    const savedAnimation = localStorage.getItem("selectedAnimation");
     const savedAuth = localStorage.getItem("isAuthorized");
+    const savedAuthModel = localStorage.getItem("authorizedModelId");
     const savedConnected = localStorage.getItem("isConnected");
-    const savedAuthModel = localStorage.getItem("authorizedModel");
     
-    if (savedAI && savedAnimation) {
-      // Only load if the model is free OR if it's the authorized model
-      const model = AI_MODELS.find(m => m.id === savedAI);
-      if (model?.tier === "free" || (savedAuth === "true" && savedAuthModel === savedAI)) {
-        setSelectedAIModel(savedAI);
-        setSelectedAnimation(savedAnimation);
-        if (savedAuth === "true") setIsAuthorized(true);
-      } else {
-        // Clear invalid saved data
-        localStorage.removeItem("selectedAIModel");
-        localStorage.removeItem("selectedAnimation");
-        localStorage.removeItem("isAuthorized");
-        localStorage.removeItem("authorizedModel");
-        localStorage.removeItem("isConnected");
+    if (savedAuth === "true" && savedAuthModel) {
+      setIsAuthorized(true);
+      setAuthorizedModelId(savedAuthModel);
+      // Check if the authorized model is not free and set it as selected
+      const model = AI_MODELS.find(m => m.id === savedAuthModel);
+      if (model && model.tier === "premium") {
+        setSelectedAIModel(savedAuthModel);
+        setSelectedAnimation(model.animation);
+        localStorage.setItem("selectedAIModel", savedAuthModel);
+        localStorage.setItem("selectedAnimation", model.animation);
       }
+    } else {
+      // Ensure free tier is selected by default if no paid authorization
+      setSelectedAIModel("michat-2.5-mini");
+      setSelectedAnimation("bronze");
+      localStorage.setItem("selectedAIModel", "michat-2.5-mini");
+      localStorage.setItem("selectedAnimation", "bronze");
     }
-    if (savedConnected === "true" && savedAuth === "true") setIsConnected(true);
+    
+    if (savedConnected === "true" && savedAuth === "true") {
+      setIsConnected(true);
+    }
   }, []);
   
-  // Handle AI Model Selection
+  // Handle AI Model Selection - Only free tier can be selected directly
   const handleAISelect = (model: any) => {
     // If free tier, select immediately
     if (model.tier === "free") {
-      // Clear any existing paid authorization
-      localStorage.removeItem("isAuthorized");
-      localStorage.removeItem("authorizedModel");
-      setIsAuthorized(false);
-      setIsConnected(false);
-      localStorage.removeItem("isConnected");
-      
+      // Clear any premium selection but keep authorization
       setSelectedAIModel(model.id);
       setSelectedAnimation(model.animation);
       localStorage.setItem("selectedAIModel", model.id);
       localStorage.setItem("selectedAnimation", model.animation);
+      // Don't clear isConnected, just update
+      if (isConnected) {
+        // Keep connected state
+      }
     } 
     // If premium tier, check if already authorized for this specific model
     else if (model.tier === "premium") {
-      const savedAuthModel = localStorage.getItem("authorizedModel");
-      const savedAuth = localStorage.getItem("isAuthorized");
-      
       // If already authorized for this exact model, select it
-      if (savedAuth === "true" && savedAuthModel === model.id) {
+      if (isAuthorized && authorizedModelId === model.id) {
         setSelectedAIModel(model.id);
         setSelectedAnimation(model.animation);
-        setIsAuthorized(true);
         localStorage.setItem("selectedAIModel", model.id);
         localStorage.setItem("selectedAnimation", model.animation);
       } 
       // Otherwise, start payment flow
       else {
-        setPendingModel(model);
         setSelectedPayModel(model);
         setShowPayPopup(true);
       }
@@ -172,18 +168,24 @@ export default function ProxyStoragePage() {
       setTimeout(() => {
         setIsAuthorizing(false);
         setIsAuthorized(true);
-        // Store which model was authorized
-        localStorage.setItem("isAuthorized", "true");
-        localStorage.setItem("authorizedModel", selectedPayModel.id);
+        setAuthorizedModelId(selectedPayModel.id);
         
-        // Now select the model
+        // Store authorization
+        localStorage.setItem("isAuthorized", "true");
+        localStorage.setItem("authorizedModelId", selectedPayModel.id);
+        
+        // Now select the paid model (replace free tier)
         setSelectedAIModel(selectedPayModel.id);
         setSelectedAnimation(selectedPayModel.animation);
         localStorage.setItem("selectedAIModel", selectedPayModel.id);
         localStorage.setItem("selectedAnimation", selectedPayModel.animation);
         
+        // Reset connection state since model changed
+        setIsConnected(false);
+        localStorage.removeItem("isConnected");
+        
         setShowAccessKeyPopup(false);
-        setPendingModel(null);
+        setAccessKey("");
         
         // Show success message
         const successDiv = document.createElement("div");
@@ -209,7 +211,7 @@ export default function ProxyStoragePage() {
     }
     
     const model = AI_MODELS.find(m => m.id === selectedAIModel);
-    if (model?.tier === "premium" && !isAuthorized) {
+    if (model?.tier === "premium" && (!isAuthorized || authorizedModelId !== selectedAIModel)) {
       alert("Please complete payment and authorization for this AI model first!");
       return;
     }
@@ -239,7 +241,7 @@ export default function ProxyStoragePage() {
     }
     
     const sizeInMB = parseInt(fileSize);
-    const uploadTime = Math.min(25, Math.max(2, Math.floor(sizeInMB / 10))); // Simulate upload time based on size
+    const uploadTime = Math.min(25, Math.max(2, Math.floor(sizeInMB / 10)));
     
     setIsUploading(true);
     setUploadProgress(0);
@@ -250,7 +252,6 @@ export default function ProxyStoragePage() {
           clearInterval(interval);
           setIsUploading(false);
           
-          // Add to history
           const newHistory: UploadHistoryItem = {
             id: Date.now().toString(),
             fileName: fileId,
@@ -262,7 +263,6 @@ export default function ProxyStoragePage() {
           };
           setUploadHistory(prev => [newHistory, ...prev]);
           
-          // Reset upload fields
           setFileId("");
           setFileSize("");
           
@@ -289,17 +289,18 @@ export default function ProxyStoragePage() {
   // Check if a model is selectable (free OR paid & authorized)
   const isModelSelectable = (model: any) => {
     if (model.tier === "free") return true;
-    const savedAuthModel = localStorage.getItem("authorizedModel");
-    const savedAuth = localStorage.getItem("isAuthorized");
-    return savedAuth === "true" && savedAuthModel === model.id;
+    return isAuthorized && authorizedModelId === model.id;
+  };
+  
+  // Check if a model is active (currently selected)
+  const isModelActive = (model: any) => {
+    return selectedAIModel === model.id;
   };
   
   // Get model status text
   const getModelStatus = (model: any) => {
     if (model.tier === "free") return "Free";
-    const savedAuthModel = localStorage.getItem("authorizedModel");
-    const savedAuth = localStorage.getItem("isAuthorized");
-    if (savedAuth === "true" && savedAuthModel === model.id) return "✓ Active";
+    if (isAuthorized && authorizedModelId === model.id) return "✓ Purchased";
     return `$${model.price}`;
   };
   
@@ -362,7 +363,7 @@ export default function ProxyStoragePage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
               {AI_MODELS.map((model, i) => {
                 const isSelectable = isModelSelectable(model);
-                const isActive = selectedAIModel === model.id;
+                const isActive = isModelActive(model);
                 
                 return (
                   <motion.button
@@ -371,23 +372,19 @@ export default function ProxyStoragePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 + i * 0.05 }}
                     onClick={() => handleAISelect(model)}
-                    disabled={model.tier === "premium" && !isSelectable && selectedAIModel !== model.id}
                     className={`relative rounded-lg border p-3 text-center transition-all duration-300 ${
                       isActive
                         ? `${getTierAnimation(model.animation)} border-transparent ring-2 scale-105`
                         : !isSelectable && model.tier === "premium"
-                        ? "border-red-400/20 bg-red-600/10 opacity-60 cursor-not-allowed"
+                        ? "border-blue-400/20 bg-blue-600/10 opacity-60 cursor-pointer hover:opacity-80"
                         : "border-blue-400/20 bg-blue-600/20 hover:bg-blue-600/30 hover:scale-102"
                     }`}
                   >
                     {model.tier === "free" && (
                       <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-green-500 text-white">FREE</span>
                     )}
-                    {model.tier === "premium" && isSelectable && (
+                    {model.tier === "premium" && isAuthorized && authorizedModelId === model.id && (
                       <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-teal-500 text-white">ACTIVE</span>
-                    )}
-                    {model.tier === "premium" && !isSelectable && selectedAIModel !== model.id && (
-                      <span className="absolute -top-2 -right-2 px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-gray-500 text-white">LOCKED</span>
                     )}
                     <div className="text-center">
                       <div className="text-lg mb-1">
@@ -406,19 +403,19 @@ export default function ProxyStoragePage() {
             </div>
             
             {/* Selected Model Display */}
-            {selectedAIModel && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`mt-3 rounded-lg p-3 text-center ${getSelectedModelAnimation()}`}
-              >
-                <p className="text-xs text-white/80">
-                  Active AI Model: <span className="font-bold">{AI_MODELS.find(m => m.id === selectedAIModel)?.name}</span>
-                  {isAuthorized && selectedAIModel !== "michat-2.5-mini" && <CheckCircle size={14} className="inline ml-2 text-green-400" />}
-                  {selectedAIModel === "michat-2.5-mini" && <Sparkles size={14} className="inline ml-2 text-amber-400" />}
-                </p>
-              </motion.div>
-            )}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`mt-3 rounded-lg p-3 text-center ${getSelectedModelAnimation()}`}
+            >
+              <p className="text-xs text-white/80">
+                Active AI Model: <span className="font-bold">{AI_MODELS.find(m => m.id === selectedAIModel)?.name}</span>
+                {selectedAIModel !== "michat-2.5-mini" && isAuthorized && authorizedModelId === selectedAIModel && (
+                  <CheckCircle size={14} className="inline ml-2 text-green-400" />
+                )}
+                {selectedAIModel === "michat-2.5-mini" && <Sparkles size={14} className="inline ml-2 text-amber-400" />}
+              </p>
+            </motion.div>
           </motion.div>
           
           {/* Connect Button */}
@@ -429,13 +426,13 @@ export default function ProxyStoragePage() {
           >
             <button
               onClick={handleConnect}
-              disabled={!selectedAIModel || isConnecting || isConnected || (selectedAIModel !== "michat-2.5-mini" && !isAuthorized)}
+              disabled={isConnecting || isConnected || (selectedAIModel !== "michat-2.5-mini" && (!isAuthorized || authorizedModelId !== selectedAIModel))}
               className={`w-full py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
                 isConnected
                   ? "bg-green-600/50 cursor-default text-green-300"
-                  : !selectedAIModel
-                  ? "bg-gray-600/50 cursor-not-allowed text-gray-400"
-                  : (selectedAIModel !== "michat-2.5-mini" && !isAuthorized)
+                  : isConnecting
+                  ? "bg-blue-600/50 cursor-wait text-white"
+                  : (selectedAIModel !== "michat-2.5-mini" && (!isAuthorized || authorizedModelId !== selectedAIModel))
                   ? "bg-red-600/50 cursor-not-allowed text-red-300"
                   : "bg-gradient-to-r from-blue-600 to-teal-600 hover:shadow-lg hover:shadow-blue-500/50 text-white"
               }`}
@@ -466,9 +463,9 @@ export default function ProxyStoragePage() {
                 />
               </div>
             )}
-            {selectedAIModel && selectedAIModel !== "michat-2.5-mini" && !isAuthorized && (
+            {selectedAIModel !== "michat-2.5-mini" && (!isAuthorized || authorizedModelId !== selectedAIModel) && (
               <p className="text-xs text-red-400 text-center mt-2">
-                ⚠️ Please complete payment & authorization for this AI model first
+                ⚠️ Please click on the model and complete payment & authorization first
               </p>
             )}
           </motion.div>
@@ -674,7 +671,7 @@ export default function ProxyStoragePage() {
               <button
                 onClick={() => {
                   setShowPayPopup(false);
-                  setPendingModel(null);
+                  setSelectedPayModel(null);
                 }}
                 className="w-full mt-2 py-2 rounded-lg text-white/60 hover:text-white/80 text-sm"
               >
@@ -687,7 +684,7 @@ export default function ProxyStoragePage() {
       
       {/* Access Key Popup */}
       <AnimatePresence>
-        {showAccessKeyPopup && (
+        {showAccessKeyPopup && selectedPayModel && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -705,7 +702,7 @@ export default function ProxyStoragePage() {
               <div className="text-center mb-4">
                 <Key size={40} className="mx-auto text-blue-400 mb-2" />
                 <h3 className="text-xl font-bold text-white">Enter Access Key</h3>
-                <p className="text-sm text-blue-400/60 mt-1">Please provide your unique access key to activate {selectedPayModel?.name}</p>
+                <p className="text-sm text-blue-400/60 mt-1">Please provide your unique access key to activate {selectedPayModel.name}</p>
               </div>
               
               <input
@@ -742,6 +739,7 @@ export default function ProxyStoragePage() {
                 onClick={() => {
                   setShowAccessKeyPopup(false);
                   setAccessKey("");
+                  setSelectedPayModel(null);
                 }}
                 className="w-full mt-2 py-2 rounded-lg text-white/60 hover:text-white/80 text-sm"
               >
