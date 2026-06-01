@@ -5,12 +5,12 @@ import { Eye, Shield, Zap, Skull, Lock, Network } from "lucide-react";
 
 export default function DarkHomePage() {
   const cards = [
-    { title: "Shadow Networks", icon: Network, color: "from-purple-800 to-gray-700" },
-    { title: "Access Control", icon: Shield, color: "from-gray-800 to-purple-700" },
-    { title: "Encrypted Ops", icon: Lock, color: "from-purple-700 to-gray-800" },
-    { title: "Threat Analysis", icon: Eye, color: "from-gray-700 to-purple-800" },
-    { title: "System Hack", icon: Skull, color: "from-purple-900 to-gray-900" },
-    { title: "Power Control", icon: Zap, color: "from-gray-900 to-purple-900" },
+    { title: "Shadow Networks", icon: Network, color: "from-gray-800 to-black" },
+    { title: "Access Control", icon: Shield, color: "from-black to-gray-800" },
+    { title: "Encrypted Ops", icon: Lock, color: "from-gray-900 to-black" },
+    { title: "Threat Analysis", icon: Eye, color: "from-black to-gray-900" },
+    { title: "System Hack", icon: Skull, color: "from-gray-900 to-black" },
+    { title: "Power Control", icon: Zap, color: "from-black to-gray-900" },
   ];
 
   return (
@@ -24,7 +24,7 @@ export default function DarkHomePage() {
       }}
     >
       {/* Dark Liquid Glass Overlay - Much lighter for better visibility */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-950/10 via-black/20 to-gray-950/15 backdrop-blur-xs" />
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/5 via-black/10 to-gray-950/5" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -37,7 +37,7 @@ export default function DarkHomePage() {
           transition={{ delay: 0.2 }}
           className="flex justify-center mb-6 sm:mb-8"
         >
-          <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-purple-600 to-gray-700 shadow-lg shadow-purple-500/50">
+          <div className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-gray-700 to-black shadow-lg shadow-gray-600/30">
             <span className="text-white font-bold text-xl sm:text-2xl">MIT</span>
           </div>
         </motion.div>
@@ -47,7 +47,7 @@ export default function DarkHomePage() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-4 drop-shadow-lg">
             MIT Dark Console
           </h1>
-          <p className="text-purple-300/60 text-sm sm:text-base lg:text-lg">
+          <p className="text-gray-300/60 text-sm sm:text-base lg:text-lg">
             Restricted network operations and shadow server management
           </p>
         </div>
@@ -63,7 +63,7 @@ export default function DarkHomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 whileHover={{ y: -5, scale: 1.02 }}
-                className={`relative p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border border-purple-600/20 bg-gradient-to-br ${card.color} bg-opacity-10 backdrop-blur-xl overflow-hidden group`}
+                className={`relative p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl border border-gray-600/20 bg-gradient-to-br ${card.color} bg-opacity-10 backdrop-blur-xl overflow-hidden group`}
               >
                 <motion.div
                   className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100"
@@ -75,10 +75,10 @@ export default function DarkHomePage() {
                     transition={{ duration: 3, repeat: Infinity }}
                     className="mb-3 sm:mb-4 p-2 sm:p-3 bg-white/10 rounded-lg sm:rounded-xl w-fit"
                   >
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
                   </motion.div>
                   <h3 className="text-white font-semibold mb-1 sm:mb-2 text-sm sm:text-base">{card.title}</h3>
-                  <p className="text-purple-300/50 text-xs sm:text-sm">
+                  <p className="text-gray-300/50 text-xs sm:text-sm">
                     Click to access
                   </p>
                 </div>
@@ -92,15 +92,15 @@ export default function DarkHomePage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="mt-10 sm:mt-16 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-purple-700/30 bg-gradient-to-r from-purple-900/20 to-gray-900/30 backdrop-blur-xl"
+          className="mt-10 sm:mt-16 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-700/30 bg-gradient-to-r from-gray-900/30 to-black/40 backdrop-blur-xl"
         >
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-white font-semibold mb-1 sm:mb-2 text-sm sm:text-base">Operational Status</h3>
-              <p className="text-purple-300/50 text-xs sm:text-sm">All systems hidden & operational</p>
+              <p className="text-gray-300/50 text-xs sm:text-sm">All systems hidden & operational</p>
             </div>
             <motion.div
-              className="h-3 w-3 rounded-full bg-purple-500"
+              className="h-3 w-3 rounded-full bg-gray-500"
               animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
               transition={{ duration: 1.5, repeat: Infinity }}
             />
@@ -109,7 +109,7 @@ export default function DarkHomePage() {
 
         {/* Warning */}
         <motion.p
-          className="mt-8 sm:mt-12 text-center text-[8px] sm:text-[9px] md:text-[10px] text-purple-600/30 font-mono"
+          className="mt-8 sm:mt-12 text-center text-[8px] sm:text-[9px] md:text-[10px] text-gray-600/30 font-mono"
           animate={{ opacity: [0.3, 0.6, 0.3] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
