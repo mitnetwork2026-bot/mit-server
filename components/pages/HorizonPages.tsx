@@ -21,7 +21,7 @@ const HorizonPageTemplate = ({ title, description, icon }: PageProps) => {
       }}
     >
       {/* Liquid Glass Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-transparent to-cyan-900/20 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-gradient-to-br from-green-900/5 via-transparent to-emerald-900/2" />
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -35,7 +35,7 @@ const HorizonPageTemplate = ({ title, description, icon }: PageProps) => {
           transition={{ delay: 0.1 }}
           className="flex justify-center mb-6 sm:mb-8"
         >
-          <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/40">
+          <div className="flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/40">
             <span className="text-white font-bold text-lg sm:text-xl">MIT</span>
           </div>
         </motion.div>
@@ -44,16 +44,16 @@ const HorizonPageTemplate = ({ title, description, icon }: PageProps) => {
           <motion.div
             animate={{ rotate: [0, 10, 0] }}
             transition={{ duration: 3, repeat: Infinity }}
-            className="p-4 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-2xl backdrop-blur-md"
+            className="p-4 bg-gradient-to-br from-green-600 to-emerald-500 rounded-2xl backdrop-blur-md"
             style={{
-              boxShadow: "0 8px 32px rgba(6, 182, 212, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
+              boxShadow: "0 8px 32px rgba(16, 185, 129, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)",
             }}
           >
             {icon}
           </motion.div>
           <div>
             <h1 className="text-3xl sm:text-4xl font-bold text-white text-balance drop-shadow-lg">{title}</h1>
-            <p className="text-blue-200/70 mt-2 text-sm sm:text-base">{description}</p>
+            <p className="text-green-200/70 mt-2 text-sm sm:text-base">{description}</p>
           </div>
         </div>
 
@@ -66,18 +66,18 @@ const HorizonPageTemplate = ({ title, description, icon }: PageProps) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               whileHover={{ y: -5 }}
-              className="p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-blue-400/30 bg-gradient-to-br from-blue-600/15 to-cyan-600/10 backdrop-blur-2xl"
+              className="p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-green-400/30 bg-gradient-to-br from-green-600/15 to-emerald-600/10 backdrop-blur-2xl cursor-pointer"
               style={{
-                boxShadow: "0 8px 32px rgba(6, 182, 212, 0.15), inset 0 1px 0 rgba(34, 197, 94, 0.2)",
+                boxShadow: "0 8px 32px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(34, 197, 94, 0.2)",
               }}
             >
               <h3 className="text-white font-semibold mb-3">Module {idx}</h3>
-              <p className="text-blue-200/60 text-sm mb-4">
+              <p className="text-green-200/60 text-sm mb-4">
                 Advanced feature module for enhanced operations
               </p>
-              <div className="h-2 bg-blue-950/50 rounded-full overflow-hidden">
+              <div className="h-2 bg-green-950/50 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-blue-500 to-cyan-400"
+                  className="h-full bg-gradient-to-r from-green-500 to-emerald-400"
                   animate={{ width: ["0%", "100%"] }}
                   transition={{ duration: 2 + idx * 0.5, repeat: Infinity }}
                 />
@@ -91,18 +91,18 @@ const HorizonPageTemplate = ({ title, description, icon }: PageProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="p-6 sm:p-8 rounded-xl sm:rounded-2xl border border-cyan-400/30 bg-gradient-to-r from-blue-600/15 to-cyan-600/10 backdrop-blur-2xl"
+          className="p-6 sm:p-8 rounded-xl sm:rounded-2xl border border-green-400/30 bg-gradient-to-r from-green-600/15 to-emerald-600/10 backdrop-blur-2xl"
           style={{
-            boxShadow: "0 8px 32px rgba(6, 182, 212, 0.15), inset 0 1px 0 rgba(34, 197, 94, 0.2)",
+            boxShadow: "0 8px 32px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(34, 197, 94, 0.2)",
           }}
         >
           <h2 className="text-xl font-bold text-white mb-6">System Status</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {["Status: Active", "Uptime: 99.9%", "Load: 45%"].map((stat, idx) => (
               <div key={idx} className="text-center">
-                <p className="text-blue-200/60 text-sm mb-2">{stat.split(":")[0]}</p>
+                <p className="text-green-200/60 text-sm mb-2">{stat.split(":")[0]}</p>
                 <motion.p
-                  className="text-2xl font-bold text-cyan-400"
+                  className="text-2xl font-bold text-green-400"
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
