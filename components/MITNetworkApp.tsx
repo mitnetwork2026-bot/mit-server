@@ -10,6 +10,8 @@ import GlassHeader from "./GlassHeader";
 import GlassFooter from "./GlassFooter";
 import SideNavigation from "./SideNavigation";
 import ProxySideNavigation from "./ProxySideNavigation";
+import HorizonSideNavigation from "./HorizonSideNavigation";
+import DarkSideNavigation from "./DarkSideNavigation";
 import NotificationPanel from "./NotificationPanel";
 import HomePage from "./pages/HomePage";
 import NSPPage from "./pages/NSPPage";
@@ -40,8 +42,33 @@ import ProxyCPUMonitorPage from "./pages/ProxyCPUMonitorPage";
 import ProxyNetworkMapPage from "./pages/ProxyNetworkMapPage";
 import ProxySecurityPage from "./pages/ProxySecurityPage";
 import ProxySettingsPage from "./pages/ProxySettingsPage";
+import MITHorizonConfirmationModal from "./MITHorizonConfirmationModal";
+import MITDarkConfirmationModal from "./MITDarkConfirmationModal";
+import MITHorizonLoadingAnimation from "./MITHorizonLoadingAnimation";
+import MITDarkLoadingAnimation from "./MITDarkLoadingAnimation";
+import MITHorizonWelcomePage from "./pages/MITHorizonWelcomePage";
+import MITDarkWelcomePage from "./pages/MITDarkWelcomePage";
+import HorizonHomePage from "./pages/HorizonHomePage";
+import DarkHomePage from "./pages/DarkHomePage";
+import MITAIConnectivityPage from "./pages/MITAIConnectivityPage";
+import {
+  HorizonDataPage,
+  HorizonMetricsPage,
+  HorizonSettingsPage,
+  HorizonNotificationsPage,
+  HorizonProfilePage,
+  HorizonLogoutPage,
+} from "./pages/HorizonPages";
+import {
+  DarkAccessPage,
+  DarkSurveillancePage,
+  DarkEncryptionPage,
+  DarkPowerPage,
+  DarkThreatPage,
+  DarkExitPage,
+} from "./pages/DarkPages";
 
-type AppState = "landing" | "loading" | "home" | "proxy-auth" | "proxy-loading" | "proxy-home";
+type AppState = "landing" | "loading" | "home" | "proxy-auth" | "proxy-loading" | "proxy-home" | "horizon-confirm" | "horizon-loading" | "horizon-welcome" | "horizon-home" | "dark-confirm" | "dark-loading" | "dark-welcome" | "dark-home" | "ai-connectivity";
 
 export default function MITNetworkApp() {
   const [appState, setAppState] = useState<AppState>("landing");
@@ -53,6 +80,12 @@ export default function MITNetworkApp() {
   const [proxyCurrentPage, setProxyCurrentPage] = useState("proxy-home");
   const [proxyUserEmail, setProxyUserEmail] = useState("");
   const [showProxyAuthModal, setShowProxyAuthModal] = useState(false);
+  const [showHorizonConfirmModal, setShowHorizonConfirmModal] = useState(false);
+  const [showDarkConfirmModal, setShowDarkConfirmModal] = useState(false);
+  const [horizonCurrentPage, setHorizonCurrentPage] = useState("horizon-home");
+  const [darkCurrentPage, setDarkCurrentPage] = useState("dark-home");
+  const [isHorizonSideNavOpen, setIsHorizonSideNavOpen] = useState(false);
+  const [isDarkSideNavOpen, setIsDarkSideNavOpen] = useState(false);
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -88,6 +121,50 @@ export default function MITNetworkApp() {
     setAppState("home");
     setProxyCurrentPage("proxy-home");
     setProxyUserEmail("");
+  };
+
+  const handleHorizonConfirm = () => {
+    setShowHorizonConfirmModal(false);
+    setAppState("horizon-loading");
+  };
+
+  const handleHorizonLoadingComplete = () => {
+    setAppState("horizon-welcome");
+  };
+
+  const handleHorizonGetStarted = () => {
+    setAppState("horizon-home");
+  };
+
+  const handleDarkConfirm = () => {
+    setShowDarkConfirmModal(false);
+    setAppState("dark-loading");
+  };
+
+  const handleDarkLoadingComplete = () => {
+    setAppState("dark-welcome");
+  };
+
+  const handleDarkGetStarted = () => {
+    setAppState("dark-home");
+  };
+
+  const handleHorizonNavigate = (page: string) => {
+    setHorizonCurrentPage(page);
+  };
+
+  const handleDarkNavigate = (page: string) => {
+    setDarkCurrentPage(page);
+  };
+
+  const handleExitHorizon = () => {
+    setAppState("home");
+    setHorizonCurrentPage("horizon-home");
+  };
+
+  const handleExitDark = () => {
+    setAppState("home");
+    setDarkCurrentPage("dark-home");
   };
 
   const renderPage = () => {
@@ -153,6 +230,48 @@ export default function MITNetworkApp() {
         return <ProxySettingsPage />;
       default:
         return <ProxySiteHomePage onNavigate={handleProxyNavigate} userEmail={proxyUserEmail} />;
+    }
+  };
+
+  const renderHorizonPage = () => {
+    switch (horizonCurrentPage) {
+      case "data":
+        return <HorizonDataPage />;
+      case "metrics":
+        return <HorizonMetricsPage />;
+      case "settings":
+        return <HorizonSettingsPage />;
+      case "notifications":
+        return <HorizonNotificationsPage />;
+      case "profile":
+        return <HorizonProfilePage />;
+      case "ai-connectivity":
+        return <MITAIConnectivityPage theme="horizon" />;
+      case "logout":
+        return <HorizonLogoutPage />;
+      default:
+        return <HorizonHomePage />;
+    }
+  };
+
+  const renderDarkPage = () => {
+    switch (darkCurrentPage) {
+      case "access":
+        return <DarkAccessPage />;
+      case "surveillance":
+        return <DarkSurveillancePage />;
+      case "encryption":
+        return <DarkEncryptionPage />;
+      case "power":
+        return <DarkPowerPage />;
+      case "threat":
+        return <DarkThreatPage />;
+      case "ai-connectivity":
+        return <MITAIConnectivityPage theme="dark" />;
+      case "exit":
+        return <DarkExitPage />;
+      default:
+        return <DarkHomePage />;
     }
   };
 
@@ -354,6 +473,8 @@ export default function MITNetworkApp() {
               currentPage={currentPage}
               onNavigate={setCurrentPage}
               onProxyClick={() => setAppState("proxy-auth")}
+              onHorizonClick={() => setShowHorizonConfirmModal(true)}
+              onDarkClick={() => setShowDarkConfirmModal(true)}
             />
             <NotificationPanel
               isOpen={isNotificationOpen}
@@ -361,7 +482,101 @@ export default function MITNetworkApp() {
             />
           </motion.div>
         )}
+
+        {appState === "horizon-welcome" && (
+          <motion.div
+            key="horizon-welcome"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="relative z-10"
+          >
+            <MITHorizonWelcomePage onGetStarted={handleHorizonGetStarted} />
+          </motion.div>
+        )}
+
+        {appState === "horizon-home" && (
+          <motion.div
+            key="horizon-home"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="relative z-10"
+          >
+            <GlassHeader 
+              onMenuClick={() => setIsHorizonSideNavOpen(true)} 
+              onNotificationClick={() => {}}
+              onProfileClick={() => {}}
+            />
+            {renderHorizonPage()}
+            <GlassFooter />
+            <HorizonSideNavigation
+              isOpen={isHorizonSideNavOpen}
+              onClose={() => setIsHorizonSideNavOpen(false)}
+              currentPage={horizonCurrentPage}
+              onNavigate={handleHorizonNavigate}
+              onExit={handleExitHorizon}
+            />
+          </motion.div>
+        )}
+
+        {appState === "dark-welcome" && (
+          <motion.div
+            key="dark-welcome"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="relative z-10"
+          >
+            <MITDarkWelcomePage onGetStarted={handleDarkGetStarted} />
+          </motion.div>
+        )}
+
+        {appState === "dark-home" && (
+          <motion.div
+            key="dark-home"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="relative z-10"
+          >
+            <GlassHeader 
+              onMenuClick={() => setIsDarkSideNavOpen(true)} 
+              onNotificationClick={() => {}}
+              onProfileClick={() => {}}
+            />
+            {renderDarkPage()}
+            <GlassFooter />
+            <DarkSideNavigation
+              isOpen={isDarkSideNavOpen}
+              onClose={() => setIsDarkSideNavOpen(false)}
+              currentPage={darkCurrentPage}
+              onNavigate={handleDarkNavigate}
+              onExit={handleExitDark}
+            />
+          </motion.div>
+        )}
       </AnimatePresence>
+
+      <MITHorizonConfirmationModal
+        isOpen={showHorizonConfirmModal}
+        onConfirm={handleHorizonConfirm}
+        onCancel={() => setShowHorizonConfirmModal(false)}
+      />
+
+      <MITDarkConfirmationModal
+        isOpen={showDarkConfirmModal}
+        onConfirm={handleDarkConfirm}
+        onCancel={() => setShowDarkConfirmModal(false)}
+      />
+
+      <MITHorizonLoadingAnimation
+        isVisible={appState === "horizon-loading"}
+        onComplete={handleHorizonLoadingComplete}
+      />
+
+      <MITDarkLoadingAnimation
+        isVisible={appState === "dark-loading"}
+        onComplete={handleDarkLoadingComplete}
+      />
 
       <AuthModal
         isOpen={showAuthModal}
