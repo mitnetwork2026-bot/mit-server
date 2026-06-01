@@ -21,7 +21,7 @@ const DarkPageTemplate = ({ title, description, icon }: PageProps) => {
       }}
     >
       {/* Dark Liquid Glass Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/30 via-black/60 to-gray-950/40 backdrop-blur-xs" />
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900/5 via-black/10 to-gray-950/5" />
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -66,18 +66,18 @@ const DarkPageTemplate = ({ title, description, icon }: PageProps) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               whileHover={{ y: -5 }}
-              className="p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-600/30 bg-gradient-to-br from-gray-800/15 to-gray-900/10 backdrop-blur-2xl"
+              className="p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-700/20 bg-gradient-to-br from-gray-900/30 to-black/40 backdrop-blur-2xl cursor-pointer"
               style={{
-                boxShadow: "0 8px 32px rgba(107, 114, 128, 0.15), inset 0 1px 0 rgba(107, 114, 128, 0.2)",
+                boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(75, 85, 99, 0.2)",
               }}
             >
               <h3 className="text-white font-semibold mb-3">Restricted Module {idx}</h3>
               <p className="text-gray-300/50 text-sm mb-4">
                 Classified operation and access control
               </p>
-              <div className="h-2 bg-gray-800/50 rounded-full overflow-hidden">
+              <div className="h-2 bg-black/50 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-gray-600 to-gray-500"
+                  className="h-full bg-gradient-to-r from-gray-700 to-gray-600"
                   animate={{ width: ["0%", "100%"] }}
                   transition={{ duration: 2 + idx * 0.5, repeat: Infinity }}
                 />
@@ -91,9 +91,9 @@ const DarkPageTemplate = ({ title, description, icon }: PageProps) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="p-6 sm:p-8 rounded-xl sm:rounded-2xl border border-gray-600/30 bg-gradient-to-r from-gray-800/15 to-gray-900/10 backdrop-blur-2xl"
+          className="p-6 sm:p-8 rounded-xl sm:rounded-2xl border border-gray-700/20 bg-gradient-to-r from-gray-900/30 to-black/40 backdrop-blur-2xl"
           style={{
-            boxShadow: "0 8px 32px rgba(107, 114, 128, 0.15), inset 0 1px 0 rgba(107, 114, 128, 0.2)",
+            boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(75, 85, 99, 0.2)",
           }}
         >
           <h2 className="text-xl font-bold text-white mb-6">Operational Status</h2>
@@ -102,7 +102,7 @@ const DarkPageTemplate = ({ title, description, icon }: PageProps) => {
               <div key={idx} className="text-center">
                 <p className="text-gray-300/50 text-sm mb-2">{stat.split(":")[0]}</p>
                 <motion.p
-                  className="text-2xl font-bold text-gray-400"
+                  className="text-2xl font-bold text-gray-300"
                   animate={{ scale: [1, 1.05, 1], opacity: [0.6, 1, 0.6] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
