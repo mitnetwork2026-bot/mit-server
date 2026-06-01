@@ -27,6 +27,8 @@ interface SideNavigationProps {
   currentPage: string;
   onNavigate: (page: string) => void;
   onProxyClick?: () => void;
+  onHorizonClick?: () => void;
+  onDarkClick?: () => void;
 }
 
 const menuItems = [
@@ -55,6 +57,8 @@ export default function SideNavigation({
   currentPage,
   onNavigate,
   onProxyClick,
+  onHorizonClick,
+  onDarkClick,
 }: SideNavigationProps) {
   const { logout, user } = useAuth();
 
@@ -144,7 +148,35 @@ export default function SideNavigation({
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600/30 py-2.5 text-sm font-medium text-emerald-400 transition-colors hover:bg-emerald-600/50 sm:py-3"
                   >
                     <Globe size={18} className="sm:h-5 sm:w-5" />
-                    Go to Proxy Site
+                    Proxy Site
+                  </motion.button>
+                )}
+                {onHorizonClick && (
+                  <motion.button
+                    onClick={() => {
+                      onHorizonClick();
+                      onClose();
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600/30 py-2.5 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-600/50 sm:py-3"
+                  >
+                    <Globe size={18} className="sm:h-5 sm:w-5" />
+                    MIT Horizon
+                  </motion.button>
+                )}
+                {onDarkClick && (
+                  <motion.button
+                    onClick={() => {
+                      onDarkClick();
+                      onClose();
+                    }}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-purple-600/30 py-2.5 text-sm font-medium text-purple-400 transition-colors hover:bg-purple-600/50 sm:py-3"
+                  >
+                    <Shield size={18} className="sm:h-5 sm:w-5" />
+                    MIT Dark
                   </motion.button>
                 )}
                 <motion.button
